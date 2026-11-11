@@ -15,7 +15,9 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Pacientes" };
 
-const POR_PAGINA = 50;
+// Se muestran todos de una vez (la base tiene unos 550). 1.000 es el tope que
+// devuelve Supabase por consulta: si algún día se supera, aparece la paginación.
+const POR_PAGINA = 1000;
 
 type Filtros = {
   q?: string; estado?: string; grupo?: string; modalidad?: string;
@@ -31,8 +33,8 @@ export default async function PacientesPage({
 }) {
   const sp = await searchParams;
   const f: Filtros = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, uno(v)]));
-  // Igual que el filtro que Marcela tenía en el Excel: por defecto, los activos.
-  const estado = f.estado ?? "activo";
+  // Por defecto se ven TODOS los pacientes, activos o no; las pestañas filtran.
+  const estado = f.estado ?? "todos";
   const pagina = Math.max(1, Number(f.pagina) || 1);
 
   const supabase = await createClient();
@@ -97,7 +99,7 @@ export default async function PacientesPage({
 
       {/* Estado: pestañas */}
       <nav className="flex flex-wrap gap-1.5" aria-label="Filtrar por estado">
-        {[...ESTADOS, { value: "todos", label: "Todos" }].map((e) => (
+        {[{ value: "todos", label: "Todos" }, ...ESTADOS].map((e) => (
           <Link
             key={e.value}
             href={url({ estado: e.value })}
@@ -154,7 +156,7 @@ export default async function PacientesPage({
         <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-6">
           <Button type="submit" size="sm">Aplicar filtros</Button>
           {hayFiltros && (
-            <Link href={`/pacientes?estado=${estado}`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            <Link href={url({ q: undefined, grupo: undefined, modalidad: undefined, miembro: undefined, flyer: undefined, saldo: undefined, contacto: undefined })} className={buttonVariants({ variant: "ghost", size: "sm" })}>
               Limpiar
             </Link>
           )}
@@ -231,7 +233,9 @@ export default async function PacientesPage({
 
       {paginas > 1 && (
         <nav className="flex items-center justify-between text-sm" aria-label="Paginación">
-          <span className="text-muted-foreground">Página {pagina} de {paginas}</span>
+          <span className="text-muted-foreground">
+            Página {pagina} de {paginas} · {total} pacientes en total
+          </span>
           <div className="flex gap-2">
             {pagina > 1 && (
               <Link href={url({ pagina: String(pagina - 1) })} className={buttonVariants({ variant: "outline", size: "sm" })}>
