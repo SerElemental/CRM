@@ -6,9 +6,7 @@ const nextConfig: NextConfig = {
   // que los usan, porque no los ve como dependencias del código.
   outputFileTracingIncludes: {
     "/facturas/**": [
-      "./node_modules/@fontsource/josefin-sans/files/josefin-sans-latin-*-normal.woff",
-      "./node_modules/@fontsource/rufina/files/rufina-latin-*-normal.woff",
-      "./node_modules/@fontsource/mrs-saint-delafield/files/mrs-saint-delafield-latin-400-normal.woff",
+      "./src/lib/facturas/fuentes/*.ttf",
       "./public/marca/logo-ser-elemental.png",
     ],
   },

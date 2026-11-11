@@ -12,29 +12,27 @@ import { pesosEnLetras } from "./letras";
 import { TEXTOS, dinero, fechaCorta, fechaLarga, totalFactura, type DatosFactura } from "./tipos";
 
 // ───────────────────────── Tipografías ─────────────────────────
-const fuente = (paquete: string, archivo: string) =>
-  path.join(process.cwd(), "node_modules", "@fontsource", paquete, "files", archivo);
+// Los archivos viven en `./fuentes` (ver su LEEME): son las tipografías de la
+// marca con un dato interno corregido, sin el cual Adobe Acrobat no dibuja la «@».
+const fuente = (archivo: string) => path.join(process.cwd(), "src", "lib", "facturas", "fuentes", archivo);
 
 Font.register({
   family: "Josefin Sans",
   fonts: [
-    { src: fuente("josefin-sans", "josefin-sans-latin-300-normal.woff"), fontWeight: 300 },
-    { src: fuente("josefin-sans", "josefin-sans-latin-400-normal.woff"), fontWeight: 400 },
-    { src: fuente("josefin-sans", "josefin-sans-latin-600-normal.woff"), fontWeight: 600 },
-    { src: fuente("josefin-sans", "josefin-sans-latin-700-normal.woff"), fontWeight: 700 },
+    { src: fuente("josefin-sans-300.ttf"), fontWeight: 300 },
+    { src: fuente("josefin-sans-400.ttf"), fontWeight: 400 },
+    { src: fuente("josefin-sans-600.ttf"), fontWeight: 600 },
+    { src: fuente("josefin-sans-700.ttf"), fontWeight: 700 },
   ],
 });
 Font.register({
   family: "Rufina",
   fonts: [
-    { src: fuente("rufina", "rufina-latin-400-normal.woff"), fontWeight: 400 },
-    { src: fuente("rufina", "rufina-latin-700-normal.woff"), fontWeight: 700 },
+    { src: fuente("rufina-400.ttf"), fontWeight: 400 },
+    { src: fuente("rufina-700.ttf"), fontWeight: 700 },
   ],
 });
-Font.register({
-  family: "Firma",
-  src: fuente("mrs-saint-delafield", "mrs-saint-delafield-latin-400-normal.woff"),
-});
+Font.register({ family: "Firma", src: fuente("mrs-saint-delafield-400.ttf") });
 // Sin guiones de corte: un nombre o un correo no se parten a mitad de palabra.
 Font.registerHyphenationCallback((palabra) => [palabra]);
 
