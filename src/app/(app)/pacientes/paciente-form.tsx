@@ -11,9 +11,9 @@ import type { PacienteFormState } from "./actions";
 
 type Tarifa = { valor: number; moneda: Moneda } | null;
 
-function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+function Seccion({ titulo, id, children }: { titulo: string; id?: string; children: React.ReactNode }) {
   return (
-    <fieldset className="bg-card ring-foreground/[0.06] rounded-xl p-5 shadow-sm ring-1">
+    <fieldset id={id} className="bg-card ring-foreground/[0.06] scroll-mt-6 rounded-xl p-5 shadow-sm ring-1">
       <legend className="sr-only">{titulo}</legend>
       <h2 className="mb-4 text-sm font-semibold">{titulo}</h2>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
@@ -77,7 +77,7 @@ function ContactoEmergencia({
 }) {
   const [relacion, setRelacion] = useState(relacionInicial);
   return (
-    <Seccion titulo="Contacto de emergencia">
+    <Seccion titulo="Contacto de emergencia" id="contacto-emergencia">
       <Campo label="Nombre del contacto" htmlFor="emergencia_nombre">
         <Input id="emergencia_nombre" name="emergencia_nombre" defaultValue={nombre} />
       </Campo>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Ban, ChevronLeft, Pencil, Send } from "lucide-react";
+import { Ban, ChevronLeft, Pencil, Send, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { anioActual, formatearDinero, formatearFecha, hoyBogota } from "@/lib/fecha";
@@ -87,11 +87,26 @@ export default async function FichaPacientePage({ params }: { params: Promise<{ 
         </Tarjeta>
 
         <Tarjeta titulo="Contacto de emergencia">
-          <Dato label="Nombre">{p.emergencia_nombre}</Dato>
-          <Dato label="Teléfono">{p.emergencia_telefono}</Dato>
-          <Dato label="Relación">
-            {textoRelacionEmergencia(p.emergencia_relacion, p.emergencia_relacion_otra)}
-          </Dato>
+          {p.emergencia_nombre || p.emergencia_telefono || p.emergencia_relacion ? (
+            <>
+              <Dato label="Nombre">{p.emergencia_nombre}</Dato>
+              <Dato label="Teléfono">{p.emergencia_telefono}</Dato>
+              <Dato label="Relación">
+                {textoRelacionEmergencia(p.emergencia_relacion, p.emergencia_relacion_otra)}
+              </Dato>
+            </>
+          ) : (
+            // Los pacientes que venían del Excel no traen este dato: se invita a completarlo.
+            <div className="space-y-3">
+              <p className="text-muted-foreground">Sin registrar.</p>
+              <Link
+                href={`/pacientes/${id}/editar#contacto-emergencia`}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                <UserPlus /> Agregar contacto de emergencia
+              </Link>
+            </div>
+          )}
         </Tarjeta>
 
         <Tarjeta titulo="Proceso terapéutico">
