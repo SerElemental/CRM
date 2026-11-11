@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# env: se versiona solo el ejemplo
+!.env.example
+
+# Datos de pacientes: NUNCA al repositorio
+*.xlsx
+*.xls
+*.csv
+/datos/
+/reportes/
+
+# Supabase CLI
+supabase/.temp/

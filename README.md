@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CRM Ser Elemental
 
-## Getting Started
+CRM del consultorio Ser Elemental (Marcela Salazar). Se construye por módulos; el primero es **Pacientes**: base de datos, ficha interna y sesiones.
 
-First, run the development server:
+Next.js 16 (App Router) · Supabase (Postgres + Auth + RLS) · Tailwind 4 · TypeScript.
+
+## Puesta en marcha
 
 ```bash
+npm install
+cp .env.example .env.local   # y completa las llaves de Supabase
+npm run db:apply             # aplica las migraciones de supabase/migrations
+npm run seed:admin -- correo@ejemplo.com "Nombre"   # crea una cuenta con acceso
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Importar el Excel de pacientes
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+El Excel tiene datos de pacientes: **vive fuera del repositorio** (por defecto se busca en la carpeta de arriba).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+node scripts/importar-excel.mjs --dry-run   # analiza y deja reportes/importacion-para-revisar.md
+npm run importar                            # importa (solo con la base vacía)
+npm run importar -- --forzar                # vuelve a importar encima
+```
 
-## Learn More
+## Comandos
 
-To learn more about Next.js, take a look at the following resources:
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Compilación de producción |
+| `npm run lint` | ESLint |
+| `npm test` | Pruebas: mapeo del Excel y migraciones (en un Postgres en memoria) |
+| `npm run db:apply` | Aplica las migraciones pendientes al proyecto de Supabase |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Cómo está organizado
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/app/(app)/pacientes/` — listado, ficha (`[id]`), alta y edición. Cada escritura pasa por una Server Action que vuelve a exigir sesión.
+- `src/lib/importacion/mapeo.ts` — traducción del Excel (color + letra de cada casilla → asistencia y pago).
+- `supabase/migrations/` — esquema, seguridad por filas (RLS) y funciones `registrar_sesion` / `registrar_paquete`.
+- `src/lib/database.types.ts` — tipos de la base, mantenidos a mano junto a las migraciones.
 
-## Deploy on Vercel
+## Seguridad
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Solo entra quien tiene un **perfil activo** (`profiles`). Los perfiles se crean con `npm run seed:admin`; registrarse por fuera no da acceso.
+- Todas las tablas tienen RLS. La service key solo la usan los scripts locales.
+- Nunca se versionan `.env*`, archivos de Excel ni la carpeta `reportes/`.
