@@ -54,6 +54,18 @@ describe("migraciones", () => {
     });
   });
 
+  it("el rol anónimo no tiene permisos sobre las tablas ni las funciones", async () => {
+    await db.exec("set role anon");
+    try {
+      for (const t of ["pacientes", "pacientes_listado", "sesiones", "paciente_tarifas", "profiles"]) {
+        await expect(db.query(`select 1 from public.${t} limit 1`)).rejects.toThrow(/permission denied/);
+      }
+      await expect(db.query("select public.registrar_paquete($1, 1)", [paciente])).rejects.toThrow(/permission denied/);
+    } finally {
+      await db.exec("reset role");
+    }
+  });
+
   it("un perfil inactivo pierde el acceso", async () => {
     await db.query("insert into public.profiles (id, activo) values ($1, false)", [intruso]);
     await como(db, intruso, async () => {

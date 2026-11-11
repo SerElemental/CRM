@@ -19,6 +19,10 @@ const SUPABASE_STUB = `
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   grant usage on schema auth to authenticated, anon;
   grant usage on schema public to authenticated, anon, service_role;
+  -- Igual que Supabase: todo lo que se crea en public nace con permisos para estos roles.
+  alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 `;
 
 /** Postgres en memoria con todas las migraciones del repo aplicadas en orden. */
