@@ -12,7 +12,8 @@
     "seed:admin": "node --env-file=.env.local scripts/seed-admin.mjs",
     "importar": "node --env-file=.env.local scripts/importar-excel.mjs",
     "muestras:factura": "tsx scripts/muestras-factura.tsx",
-    "cargar:emisores": "node --env-file=.env.local scripts/cargar-emisores.mjs"
+    "cargar:emisores": "node --env-file=.env.local scripts/cargar-emisores.mjs",
+    "desplegar": "npx vercel deploy --prod --yes --scope venadigital2207-5561s-projects"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

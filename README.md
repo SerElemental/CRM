@@ -35,6 +35,20 @@ npm run muestras:factura     # genera PDF de muestra en ../Muestras de facturas
 
 Una factura emitida no se edita ni se borra: se marca pagada o se anula. El consecutivo es por empresa y año.
 
+## Despliegue
+
+Producción: https://crm-ser-elemental.vercel.app (proyecto `crm-ser-elemental` en Vercel).
+
+Vercel no tiene acceso al repositorio de GitHub, así que **no se publica solo al subir cambios**: se publica desde este computador.
+
+```bash
+npm run desplegar            # compila en Vercel y publica a producción
+```
+
+En Vercel solo están las dos variables públicas (`NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). La service key y el token de acceso **no** se suben: solo los usan los scripts locales. El archivo `.vercelignore` deja por fuera llaves, datos y pruebas.
+
+Para que se publique solo con cada `git push`, hay que instalar la app de Vercel en la cuenta SerElemental de GitHub y ejecutar `npx vercel git connect`.
+
 ## Comandos
 
 | Comando | Qué hace |
