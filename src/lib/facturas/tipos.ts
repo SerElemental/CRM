@@ -63,6 +63,8 @@ export type DatosFactura = {
   cliente: ClienteFactura;
   items: ItemFactura[];
   notas?: string | null;
+  /** Sello cruzado sobre la página: documento anulado o vista previa antes de emitir. */
+  sello?: "anulada" | "vista_previa" | null;
 };
 
 export const TEXTOS: Record<Idioma, Record<string, string>> = {
@@ -80,6 +82,9 @@ export const TEXTOS: Record<Idioma, Record<string, string>> = {
     pago: "Información de pago",
     notas: "Observaciones",
     gracias: "Gracias por tu confianza",
+    anulada: "Anulada",
+    vista_previa: "Vista previa",
+    sesion: "Sesión de consulta psicológica",
   },
   en: {
     para: "Issued to",
@@ -95,6 +100,9 @@ export const TEXTOS: Record<Idioma, Record<string, string>> = {
     pago: "Payment information",
     notas: "Notes",
     gracias: "Thank you",
+    anulada: "Void",
+    vista_previa: "Preview",
+    sesion: "Human Development Consulting session",
   },
 };
 

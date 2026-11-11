@@ -124,6 +124,11 @@ const s = StyleSheet.create({
     flexDirection: "row", justifyContent: "space-between", fontSize: 8.5, color: C.gris,
   },
   pieFranja: { height: 10, backgroundColor: C.rosa },
+  sello: {
+    position: "absolute", top: 330, left: 0, right: 0, textAlign: "center",
+    fontSize: 78, fontWeight: 700, letterSpacing: 6, textTransform: "uppercase",
+    color: C.terracota, opacity: 0.16, transform: "rotate(-24deg)",
+  },
 });
 
 const logoPorDefecto = () => path.join(process.cwd(), "public", "marca", "logo-ser-elemental.png");
@@ -248,6 +253,8 @@ export function FacturaPDF({ datos, logo = logoPorDefecto() }: { datos: DatosFac
             </View>
           </View>
         </View>
+
+        {datos.sello ? <Text style={s.sello} fixed>{t[datos.sello]}</Text> : null}
 
         <View style={s.pie} fixed>
           <View style={s.pieTexto}>

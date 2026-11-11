@@ -22,6 +22,7 @@ export const pacienteSchema = z
   .object({
   nombre_completo: z.string().trim().min(2, "Escribe el nombre completo.").max(200),
   tipo: z.enum(["individual", "pareja", "adolescente", "nino"]),
+  documento: textoOpcional,
   pais: textoOpcional,
   telefono: textoOpcional,
   email: z.preprocess(

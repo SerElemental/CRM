@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Ban, ChevronLeft, Pencil, Send, UserPlus } from "lucide-react";
+import { Ban, ChevronLeft, FileDown, Pencil, ReceiptText, Send, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { anioActual, formatearDinero, formatearFecha, hoyBogota } from "@/lib/fecha";
 import {
   ESTADO_BADGE, ESTADO_LABEL, MODALIDAD_LABEL, PLAN_TRABAJO_LABEL, TIPO_LABEL, textoRelacionEmergencia,
 } from "@/lib/pacientes";
+import { EMPRESA_LABEL, FACTURA_ESTADO_BADGE, FACTURA_ESTADO_LABEL } from "@/lib/facturas/estados";
+import { dinero } from "@/lib/facturas/tipos";
 import { createClient } from "@/lib/supabase/server";
 import { marcarFlyerEnviado } from "../actions";
 import { SesionesPanel } from "./sesiones-panel";
@@ -42,12 +44,19 @@ export default async function FichaPacientePage({ params }: { params: Promise<{ 
   const { data: p } = await supabase.from("pacientes_listado").select("*").eq("id", id).maybeSingle();
   if (!p) notFound();
 
-  const [{ data: sesiones }, { data: tarifas }, { data: plan }] = await Promise.all([
+  const [{ data: sesiones }, { data: tarifas }, { data: plan }, { data: facturas }] = await Promise.all([
     supabase.from("sesiones").select("*").eq("paciente_id", id).order("numero", { ascending: false }),
     supabase.from("paciente_tarifas").select("*").eq("paciente_id", id).in("anio", [anio, anio - 1]),
     p.plan_membresia_id
       ? supabase.from("planes_membresia").select("*").eq("id", p.plan_membresia_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("facturas_listado")
+      .select("id, numero, fecha, emisor_clave, moneda, total, estado")
+      .eq("paciente_id", id)
+      .order("fecha", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(100),
   ]);
   const tarifa = (a: number) => {
     const t = (tarifas ?? []).find((x) => x.anio === a);
@@ -82,6 +91,7 @@ export default async function FichaPacientePage({ params }: { params: Promise<{ 
         <Tarjeta titulo="Contacto">
           <Dato label="Teléfono">{p.telefono}</Dato>
           <Dato label="Correo">{p.email}</Dato>
+          <Dato label="Documento">{p.documento}</Dato>
           <Dato label="País">{p.pais}</Dato>
           <Dato label="Grupo de WhatsApp">{p.grupo_whatsapp ?? "Sin grupo"}</Dato>
         </Tarjeta>
@@ -169,6 +179,58 @@ export default async function FichaPacientePage({ params }: { params: Promise<{ 
           perdidas: p.sesiones_perdidas,
         }}
       />
+      <section className="space-y-4" aria-labelledby="facturas-titulo">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="facturas-titulo" className="text-lg font-semibold tracking-tight">Facturas</h2>
+          <Link href={`/facturas/nueva?paciente=${id}`} className={buttonVariants({ variant: "outline" })}>
+            <ReceiptText /> Nueva factura
+          </Link>
+        </div>
+        {(facturas ?? []).length === 0 ? (
+          <p className="bg-card ring-foreground/[0.06] text-muted-foreground rounded-xl p-5 text-sm shadow-sm ring-1">
+            Aún no se le ha emitido ninguna factura.
+          </p>
+        ) : (
+          <div className="tabla-wrap">
+            <table className="tabla">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th>Empresa</th>
+                  <th className="text-right">Total</th>
+                  <th>Estado</th>
+                  <th className="w-12"><span className="sr-only">PDF</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {(facturas ?? []).map((f) => (
+                  <tr key={f.id} className={f.estado === "anulada" ? "text-muted-foreground" : undefined}>
+                    <td>
+                      <Link href={`/facturas/${f.id}`} className="hover:text-primary font-medium tabular-nums">{f.numero}</Link>
+                    </td>
+                    <td className="text-muted-foreground whitespace-nowrap">{formatearFecha(f.fecha)}</td>
+                    <td className="text-muted-foreground">{EMPRESA_LABEL[f.emisor_clave] ?? f.emisor_clave}</td>
+                    <td className="text-right whitespace-nowrap tabular-nums">
+                      {dinero(Number(f.total), f.moneda)} <span className="text-muted-foreground text-xs">{f.moneda}</span>
+                    </td>
+                    <td><Badge variant={FACTURA_ESTADO_BADGE[f.estado]}>{FACTURA_ESTADO_LABEL[f.estado]}</Badge></td>
+                    <td className="text-right">
+                      <a
+                        href={`/facturas/${f.id}/pdf?descargar=1`} title="Descargar PDF"
+                        className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
+                        aria-label={`Descargar el PDF de ${f.numero}`}
+                      >
+                        <FileDown />
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

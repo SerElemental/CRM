@@ -138,6 +138,9 @@ export function PacienteForm({
             {TIPOS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </Campo>
+        <Campo label="Documento de identidad" htmlFor="documento">
+          <Input id="documento" name="documento" defaultValue={txt("documento", p?.documento)} placeholder="Ej. C.C. 1.234.567" />
+        </Campo>
         <Campo label="País" htmlFor="pais">
           <Input id="pais" name="pais" defaultValue={txt("pais", p?.pais ?? "Colombia")} />
         </Campo>

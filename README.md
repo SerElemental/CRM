@@ -24,6 +24,17 @@ npm run importar                            # importa (solo con la base vacía)
 npm run importar -- --forzar                # vuelve a importar encima
 ```
 
+## Facturas
+
+Marcela factura desde dos empresas: Colombia (cuenta de cobro, COP) y EE. UU. (invoice, USD). Los datos de cada una —incluidas las cuentas bancarias— viven en la base, no en el código:
+
+```bash
+npm run cargar:emisores      # lee datos/emisores.json (no se versiona) y lo carga en la tabla emisores
+npm run muestras:factura     # genera PDF de muestra en ../Muestras de facturas
+```
+
+Una factura emitida no se edita ni se borra: se marca pagada o se anula. El consecutivo es por empresa y año.
+
 ## Comandos
 
 | Comando | Qué hace |
@@ -37,6 +48,8 @@ npm run importar -- --forzar                # vuelve a importar encima
 ## Cómo está organizado
 
 - `src/app/(app)/pacientes/` — listado, ficha (`[id]`), alta y edición. Cada escritura pasa por una Server Action que vuelve a exigir sesión.
+- `src/app/(app)/facturas/` — repositorio con filtros, nueva factura, detalle y la ruta que genera el PDF.
+- `src/lib/facturas/` — plantilla PDF (`factura-pdf.tsx`), tipos, validación y valor en letras.
 - `src/lib/importacion/mapeo.ts` — traducción del Excel (color + letra de cada casilla → asistencia y pago).
 - `supabase/migrations/` — esquema, seguridad por filas (RLS) y funciones `registrar_sesion` / `registrar_paquete`.
 - `src/lib/database.types.ts` — tipos de la base, mantenidos a mano junto a las migraciones.
