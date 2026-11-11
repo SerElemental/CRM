@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: { default: "Ser Elemental · CRM", template: "%s · Ser Elemental" },
   description: "CRM del consultorio Ser Elemental.",
   robots: { index: false, follow: false },
+  // Nombre que propone el iPhone al «Agregar a Inicio» (el icono es apple-icon.png).
+  appleWebApp: { title: "Ser Elemental" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
