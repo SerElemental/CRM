@@ -47,7 +47,7 @@ npm run desplegar            # compila en Vercel y publica a producción
 
 En Vercel solo están las dos variables públicas (`NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). La service key y el token de acceso **no** se suben: solo los usan los scripts locales. El archivo `.vercelignore` deja por fuera llaves, datos y pruebas.
 
-Para que se publique solo con cada `git push`, hay que instalar la app de Vercel en la cuenta SerElemental de GitHub y ejecutar `npx vercel git connect`.
+Se intentó enlazar el repositorio (la app de Vercel está instalada en la cuenta SerElemental de GitHub, solo para este repositorio), pero Vercel no admite como origen la cuenta personal de otra persona. Si algún día hace falta que se publique solo, la vía es un flujo de GitHub Actions con un token de Vercel guardado como secreto `VERCEL_TOKEN`.
 
 ## Comandos
 

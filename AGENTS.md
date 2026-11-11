@@ -17,3 +17,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Al añadir columnas a `pacientes` hay que volver a crear las vistas `pacientes_listado` y `pacientes_facetas` en la misma migración: usan `p.*` y Postgres fija las columnas de una vista al crearla (ver la migración `…0008`).
 - Un cambio de esquema = migración nueva (nunca editar una aplicada) + `src/lib/database.types.ts` + prueba en `supabase/tests/`.
 - Antes de cada commit: `npm run lint`, `npm test` y `npm run build`.
+- **Después de cada `git push` a `main`: `npm run desplegar`.** Vercel no está enlazado al repositorio (no admite la cuenta personal SerElemental), así que nada se publica solo. Al terminar, comprobar que https://crm-ser-elemental.vercel.app/login responde y decirle a la persona que el cambio ya está publicado. Decisión de Laura, 11-nov-2026.
