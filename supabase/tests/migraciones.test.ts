@@ -54,6 +54,7 @@ describe("migraciones", () => {
       { faceta: "flyer", valor: "no", total: 1 },
       { faceta: "pais", valor: null, total: 1 },
       { faceta: "plan", valor: null, total: 1 },
+      { faceta: "saldo", valor: "al_dia", total: 1 },
     ]);
     await como(db, intruso, async () => {
       const r = await uno<{ n: number }>("select count(*)::int as n from public.pacientes_facetas");
@@ -137,6 +138,16 @@ describe("sesiones", () => {
     // Una sesión perdida no adelanta la «última sesión».
     const p = await uno<{ u: string }>("select ultima_sesion::text as u from public.pacientes where id = $1", [paciente]);
     expect(p.u).toBe("2026-11-12");
+  });
+
+  it("las facetas de saldo cuentan al paciente en «por cobrar» y en «prepagadas» a la vez", async () => {
+    const filas = (await db.query(
+      "select valor, total from public.pacientes_facetas where faceta = 'saldo' order by valor",
+    )).rows;
+    expect(filas).toEqual([
+      { valor: "por_cobrar", total: 1 },
+      { valor: "prepagadas", total: 1 },
+    ]);
   });
 
   it("rechaza paquetes fuera de rango y sesiones 'pendiente'", async () => {

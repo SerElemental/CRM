@@ -6,7 +6,7 @@
  * Sin imports con alias: `scripts/` también carga este archivo directamente.
  */
 
-export type ClaveFiltro = "pais" | "flyer" | "estado" | "plan" | "consentimiento";
+export type ClaveFiltro = "pais" | "saldo" | "flyer" | "estado" | "plan" | "consentimiento";
 
 /** Valor que representa «sin dato» (la columna está vacía). */
 export const SIN_DATO = "sin_dato";
@@ -34,6 +34,15 @@ export const FILTROS: DefinicionFiltro[] = [
     ],
   },
   { clave: "pais", titulo: "País" },
+  {
+    clave: "saldo",
+    titulo: "Saldo",
+    opciones: [
+      { value: "por_cobrar", label: "Con sesiones por cobrar" },
+      { value: "prepagadas", label: "Con sesiones prepagadas" },
+      { value: "al_dia", label: "Al día (sin saldo)" },
+    ],
+  },
   {
     clave: "consentimiento",
     titulo: "Consentimiento",
@@ -153,6 +162,13 @@ function siNo<Q extends Consulta<Q>>(q: Q, columna: string, valores: string[]): 
   return valores.length === 1 ? q.eq(columna, valores[0] === "si") : q;
 }
 
+/** Condición de cada opción del filtro «Saldo», en sintaxis de PostgREST. */
+const CONDICION_SALDO: Record<string, string> = {
+  por_cobrar: "sesiones_por_cobrar.gt.0",
+  prepagadas: "sesiones_prepagadas.gt.0",
+  al_dia: "and(sesiones_por_cobrar.eq.0,sesiones_prepagadas.eq.0)",
+};
+
 /** Aplica los filtros activos a una consulta sobre `pacientes_listado`. */
 export function aplicarFiltros<Q extends Consulta<Q>>(q: Q, f: FiltrosActivos): Q {
   if (f.q) {
@@ -162,6 +178,8 @@ export function aplicarFiltros<Q extends Consulta<Q>>(q: Q, f: FiltrosActivos): 
   if (f.estado.length) q = q.in("estado", f.estado);
   if (f.pais.length) q = enLista(q, "pais", f.pais);
   if (f.plan.length) q = enLista(q, "plan_trabajo_enviado", f.plan);
+  // Varias opciones de saldo se suman: «por cobrar» O «prepagadas».
+  if (f.saldo.length) q = q.or(f.saldo.map((v) => CONDICION_SALDO[v]).join(","));
   q = siNo(q, "flyer_enviado", f.flyer);
   q = siNo(q, "consentimiento", f.consentimiento);
   return q;

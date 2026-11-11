@@ -56,7 +56,7 @@ export function FiltrosPacientes({
   };
   const limpiarTodo = () => {
     setTexto("");
-    ir({ q: "", pais: [], flyer: [], estado: [], plan: [], consentimiento: [] });
+    ir({ q: "", pais: [], saldo: [], flyer: [], estado: [], plan: [], consentimiento: [] });
   };
 
   const etiqueta = (clave: ClaveFiltro, valor: string) =>

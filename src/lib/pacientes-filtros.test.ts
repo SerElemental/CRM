@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  aplicarFiltros, filtrosAUrl, hayFiltros, leerFiltros, opcionesConConteo, SIN_DATO, type Faceta,
+  aplicarFiltros, FILTROS, filtrosAUrl, hayFiltros, leerFiltros, opcionesConConteo, SIN_DATO, type Faceta,
 } from "./pacientes-filtros";
 
 const facetas: Faceta[] = [
@@ -13,6 +13,7 @@ const facetas: Faceta[] = [
   { faceta: "flyer", valor: "si", total: 24 },
   { faceta: "plan", valor: null, total: 80 },
   { faceta: "plan", valor: "si", total: 463 },
+  { faceta: "saldo", valor: "por_cobrar", total: 60 },
 ];
 const opciones = opcionesConConteo(facetas);
 
@@ -83,6 +84,18 @@ describe("aplicarFiltros", () => {
     expect(con({ consentimiento: "no" })).toEqual(["eq consentimiento false"]);
     expect(con({ flyer: "si,no" })).toEqual([]);
   });
+  it("saldo: una opción, o varias que se suman", () => {
+    expect(con({ saldo: "por_cobrar" })).toEqual(["or sesiones_por_cobrar.gt.0"]);
+    expect(con({ saldo: "por_cobrar,prepagadas" })).toEqual([
+      "or sesiones_por_cobrar.gt.0,sesiones_prepagadas.gt.0",
+    ]);
+    expect(con({ saldo: "al_dia" })).toEqual(["or and(sesiones_por_cobrar.eq.0,sesiones_prepagadas.eq.0)"]);
+    expect(con({ saldo: "inventado" })).toEqual([]);
+  });
+  it("el orden de los filtros en pantalla", () =>
+    expect(FILTROS.map((f) => f.titulo)).toEqual([
+      "Estado", "País", "Saldo", "Consentimiento", "Plan de trabajo", "Seguimiento",
+    ]));
   it("la búsqueda ignora tildes y escapa comodines", () =>
     expect(con({ q: "Peña_50%" })).toEqual(["ilike busqueda %pena\\_50\\%%"]));
 });
