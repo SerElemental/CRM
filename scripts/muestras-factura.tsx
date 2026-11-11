@@ -39,6 +39,27 @@ const muestras: { archivo: string; datos: DatosFactura }[] = [
     },
   },
   {
+    // Mismo documento, pero a nombre de una empresa: con su identificación, dirección y varios renglones.
+    archivo: "Muestra - Invoice EEUU (empresa).pdf",
+    datos: {
+      numero: numeroFactura(us.prefijo, 2026, 2),
+      fecha: "2026-11-11",
+      emisor: us,
+      cliente: {
+        nombre: "Sample Company LLC",
+        identificacion: "EIN 00-0000000",
+        direccion: "000 Sample Street, Suite 000, Greenville, SC 29601",
+        email: "accounts.payable@example.com",
+      },
+      items: [
+        { descripcion: "Team workshop: “Purpose and Productivity”", fecha: "2026-10-28", cantidad: 1, valorUnitario: 450 },
+        { descripcion: "Human Development Consulting session", fecha: "2026-11-04", cantidad: 3, valorUnitario: 130 },
+        { descripcion: "Follow-up group session", fecha: "2026-11-10", cantidad: 1, valorUnitario: 180 },
+      ],
+      notas: "Purchase order No. 0000. Payment due within 15 days of the date of issue.",
+    },
+  },
+  {
     archivo: "Muestra - Cuenta de cobro Colombia.pdf",
     datos: {
       numero: numeroFactura(co.prefijo, 2026, 1),
@@ -57,8 +78,8 @@ const muestras: { archivo: string; datos: DatosFactura }[] = [
     },
   },
   {
-    // Caso largo: paquete, nota y varios renglones, para ver cómo crece la página.
-    archivo: "Muestra - Cuenta de cobro Colombia (paquete).pdf",
+    // A nombre de una empresa: con NIT, dirección, varios renglones y una observación.
+    archivo: "Muestra - Cuenta de cobro Colombia (empresa).pdf",
     datos: {
       numero: numeroFactura(co.prefijo, 2026, 2),
       fecha: "2026-11-11",

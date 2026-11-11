@@ -64,7 +64,8 @@ const s = StyleSheet.create({
   lema: { marginTop: 8, fontSize: 7.5, fontWeight: 600, letterSpacing: 2.2, color: C.gris, textTransform: "uppercase" },
   documento: { alignItems: "flex-end" },
   tipoDocumento: { fontSize: 9, fontWeight: 700, letterSpacing: 3, color: C.terracota, textTransform: "uppercase" },
-  numero: { fontFamily: "Rufina", fontWeight: 700, fontSize: 21, marginTop: 3, lineHeight: 1.2 },
+  // Las cifras van en Josefin Sans: en Rufina el «1» es de estilo antiguo y se lee como una «I».
+  numero: { fontWeight: 700, fontSize: 19, letterSpacing: 0.8, marginTop: 5, lineHeight: 1.2 },
   fecha: { marginTop: 3, fontSize: 9.5, color: C.gris },
 
   separador: { height: 1, backgroundColor: C.linea, marginTop: 18 },
@@ -97,8 +98,8 @@ const s = StyleSheet.create({
   cajaTotal: { width: 250, backgroundColor: C.rosaClaro, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 3 },
   filaTotal: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
   etiquetaTotal: { fontSize: 8, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" },
-  valorTotal: { fontFamily: "Rufina", fontWeight: 700, fontSize: 20, lineHeight: 1.1 },
-  moneda: { fontFamily: "Josefin Sans", fontWeight: 600, fontSize: 9, color: C.gris },
+  valorTotal: { fontWeight: 700, fontSize: 20, lineHeight: 1.1 },
+  moneda: { fontWeight: 600, fontSize: 9, color: C.gris },
   enLetras: { marginTop: 8, fontSize: 9.5, color: C.gris },
   enLetrasValor: { color: C.tinta, fontWeight: 400 },
 
