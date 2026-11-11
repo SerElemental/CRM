@@ -42,6 +42,25 @@ describe("migraciones", () => {
     expect(p.busqueda).toBe("adrian pena 300 111");
   });
 
+  it("las facetas cuentan pacientes por valor de cada filtro, y solo las ve el equipo", async () => {
+    const filas = await como(db, staff, async () =>
+      (await db.query<{ faceta: string; valor: string | null; total: number }>(
+        "select faceta, valor, total from public.pacientes_facetas order by faceta",
+      )).rows,
+    );
+    expect(filas).toEqual([
+      { faceta: "consentimiento", valor: "no", total: 1 },
+      { faceta: "estado", valor: "activo", total: 1 },
+      { faceta: "flyer", valor: "no", total: 1 },
+      { faceta: "pais", valor: null, total: 1 },
+      { faceta: "plan", valor: null, total: 1 },
+    ]);
+    await como(db, intruso, async () => {
+      const r = await uno<{ n: number }>("select count(*)::int as n from public.pacientes_facetas");
+      expect(r.n).toBe(0);
+    });
+  });
+
   it("una cuenta sin perfil no ve ni escribe pacientes", async () => {
     await como(db, intruso, async () => {
       const r = await uno<{ n: number }>("select count(*)::int as n from public.pacientes");
@@ -57,7 +76,7 @@ describe("migraciones", () => {
   it("el rol anónimo no tiene permisos sobre las tablas ni las funciones", async () => {
     await db.exec("set role anon");
     try {
-      for (const t of ["pacientes", "pacientes_listado", "sesiones", "paciente_tarifas", "profiles"]) {
+      for (const t of ["pacientes", "pacientes_listado", "pacientes_facetas", "sesiones", "paciente_tarifas", "profiles"]) {
         await expect(db.query(`select 1 from public.${t} limit 1`)).rejects.toThrow(/permission denied/);
       }
       await expect(db.query("select public.registrar_paquete($1, 1)", [paciente])).rejects.toThrow(/permission denied/);

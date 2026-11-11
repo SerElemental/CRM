@@ -42,8 +42,3 @@ export const ESTADO_BADGE: Record<PacienteEstado, "success" | "warning" | "secon
   inactivo_sin_pagar: "destructive",
   remitido: "outline",
 };
-
-/** Texto de búsqueda como lo guarda la base: minúsculas y sin tildes. */
-export function normalizarBusqueda(q: string): string {
-  return q.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
-}

@@ -95,6 +95,9 @@ export type PacienteListado = Paciente & {
   sesiones_perdidas: number;
 };
 
+/** Vista `pacientes_facetas`: cuántos pacientes hay por valor de cada filtro. */
+export type PacienteFaceta = { faceta: string; valor: string | null; total: number };
+
 export type Database = {
   public: {
     Tables: {
@@ -110,6 +113,7 @@ export type Database = {
     };
     Views: {
       pacientes_listado: { Row: PacienteListado; Relationships: [] };
+      pacientes_facetas: { Row: PacienteFaceta; Relationships: [] };
     };
     Functions: {
       registrar_sesion: {
