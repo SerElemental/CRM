@@ -44,7 +44,7 @@ export const FILTROS: DefinicionFiltro[] = [
   },
   {
     clave: "plan",
-    titulo: "Plan de trabajo enviado",
+    titulo: "Plan de trabajo",
     opciones: [
       { value: "si", label: "Sí" },
       { value: "no", label: "No" },
@@ -54,7 +54,7 @@ export const FILTROS: DefinicionFiltro[] = [
   },
   {
     clave: "flyer",
-    titulo: "Seguimiento flyer",
+    titulo: "Seguimiento",
     opciones: [
       { value: "si", label: "Flyer enviado" },
       { value: "no", label: "Sin flyer" },
