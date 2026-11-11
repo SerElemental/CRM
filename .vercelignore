@@ -1,0 +1,17 @@
+# Lo que NUNCA se sube a Vercel al publicar desde este computador.
+# (Vercel ya respeta .gitignore; esto lo deja explícito por si acaso.)
+
+# Llaves y datos locales
+.env*
+!.env.example
+datos/
+reportes/
+*.xlsx
+*.xls
+*.csv
+
+# No hacen falta para que la app funcione
+supabase/tests/
+scripts/
+.next/
+node_modules/
