@@ -10,10 +10,15 @@
     "test": "vitest run",
     "db:apply": "node --env-file=.env.local scripts/db-apply.mjs",
     "seed:admin": "node --env-file=.env.local scripts/seed-admin.mjs",
-    "importar": "node --env-file=.env.local scripts/importar-excel.mjs"
+    "importar": "node --env-file=.env.local scripts/importar-excel.mjs",
+    "muestras:factura": "tsx scripts/muestras-factura.tsx"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@fontsource/josefin-sans": "^5.3.0",
+    "@fontsource/mrs-saint-delafield": "^5.3.0",
+    "@fontsource/rufina": "^5.3.0",
+    "@react-pdf/renderer": "^4.9.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.0",
     "class-variance-authority": "^0.7.1",
@@ -37,6 +42,7 @@
     "eslint-config-next": "16.4.6",
     "exceljs": "^4.4.0",
     "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.0"
   },
