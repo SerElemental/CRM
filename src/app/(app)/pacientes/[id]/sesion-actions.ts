@@ -10,6 +10,7 @@ export type SesionState = { ok?: true; error?: string } | undefined;
 function refrescar(pacienteId: string) {
   revalidatePath(`/pacientes/${pacienteId}`);
   revalidatePath("/pacientes");
+  revalidatePath("/inicio");
 }
 
 export async function registrarSesion(formData: FormData): Promise<SesionState> {

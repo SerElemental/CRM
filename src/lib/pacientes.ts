@@ -1,6 +1,7 @@
 import type {
   Modalidad, PacienteEstado, PacienteTipo, PlanTrabajo, RelacionEmergencia,
 } from "@/lib/database.types";
+import type { Tono } from "@/lib/tono";
 
 export const ESTADOS: { value: PacienteEstado; label: string }[] = [
   { value: "activo", label: "Activo" },
@@ -55,11 +56,11 @@ export function textoRelacionEmergencia(
   return relacion === "otro" ? (otra ?? "Otro") : RELACION_EMERGENCIA_LABEL[relacion];
 }
 
-/** Variante del <Badge> para cada estado. */
-export const ESTADO_BADGE: Record<PacienteEstado, "success" | "warning" | "secondary" | "destructive" | "outline"> = {
+/** Tono del punto que acompaña a cada estado. */
+export const ESTADO_TONO: Record<PacienteEstado, Tono> = {
   activo: "success",
   seguimiento: "warning",
-  inactivo: "secondary",
-  inactivo_sin_pagar: "destructive",
+  inactivo: "neutral",
+  inactivo_sin_pagar: "danger",
   remitido: "outline",
 };

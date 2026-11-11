@@ -14,7 +14,7 @@ const esquema = z.object({
 /** Solo se aceptan destinos internos, para no redirigir a otro sitio tras el login. */
 function destinoSeguro(next: FormDataEntryValue | null) {
   const v = typeof next === "string" ? next : "";
-  return v.startsWith("/") && !v.startsWith("//") ? v : "/pacientes";
+  return v.startsWith("/") && !v.startsWith("//") ? v : "/inicio";
 }
 
 export async function iniciarSesion(_prev: LoginState, formData: FormData): Promise<LoginState> {

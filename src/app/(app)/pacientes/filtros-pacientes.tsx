@@ -14,8 +14,8 @@ import { BuscadorPacientes } from "./buscador-pacientes";
 const ESPERA_BUSQUEDA = 350;
 
 /**
- * Barra única de filtros del listado. Cada filtro es un desplegable con casillas
- * (se pueden marcar varias) y se aplica en cuanto se marca: no hay botón de
+ * Filtros del listado: buscador y, al lado, un desplegable con casillas por cada
+ * filtro (se pueden marcar varias). Todo se aplica al instante, sin botón de
  * «aplicar». El estado vive en la URL, así que un filtro se puede compartir o
  * guardar como enlace.
  */
@@ -63,24 +63,20 @@ export function FiltrosPacientes({
     opciones[clave].find((o) => o.value === valor)?.label ?? valor;
 
   return (
-    <section
-      aria-label="Buscar y filtrar pacientes"
-      className="bg-card ring-foreground/[0.06] space-y-3 rounded-xl p-4 shadow-sm ring-1"
-    >
-      <BuscadorPacientes valor={texto} alCambiar={setTexto} pendiente={pendiente} />
-
-      <div className="flex flex-wrap items-center gap-2">
+    <section aria-label="Buscar y filtrar pacientes" className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="min-w-0 flex-[1_1_17.5rem]">
+          <BuscadorPacientes valor={texto} alCambiar={setTexto} pendiente={pendiente} />
+        </div>
         {FILTROS.map((f) => {
           const elegidos = vista[f.clave];
           return (
             <Popover.Root key={f.clave}>
               <Popover.Trigger
                 className={cn(
-                  "inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition-colors outline-none",
+                  "inline-flex h-10 items-center gap-2 rounded-lg border pr-3 pl-3.5 text-sm font-medium transition-colors outline-none",
                   "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3",
-                  elegidos.length
-                    ? "border-primary/40 bg-accent text-foreground"
-                    : "border-input bg-card text-foreground hover:bg-muted",
+                  elegidos.length ? "border-foreground bg-accent" : "border-input bg-card hover:bg-muted",
                 )}
               >
                 {f.titulo}
@@ -89,13 +85,13 @@ export function FiltrosPacientes({
                     {elegidos.length}
                   </span>
                 )}
-                <ChevronDown className="text-muted-foreground size-4" />
+                <ChevronDown className="text-muted-foreground size-3.5" strokeWidth={2.2} />
               </Popover.Trigger>
               <Popover.Portal>
                 <Popover.Positioner sideOffset={6} align="start" className="z-50">
                   <Popover.Popup
                     aria-label={f.titulo}
-                    className="bg-popover text-popover-foreground ring-foreground/10 max-h-80 min-w-60 overflow-y-auto rounded-xl p-1.5 shadow-lg ring-1 outline-none"
+                    className="bg-popover text-popover-foreground border-input max-h-80 min-w-60 overflow-y-auto rounded-xl border p-1.5 shadow-lg outline-none"
                   >
                     <ul>
                       {opciones[f.clave].map((o) => {
@@ -119,7 +115,7 @@ export function FiltrosPacientes({
                               <span
                                 aria-hidden
                                 className={cn(
-                                  "peer-focus-visible:ring-ring/50 flex size-4 shrink-0 items-center justify-center rounded border peer-focus-visible:ring-3",
+                                  "peer-focus-visible:ring-ring/50 flex size-4 shrink-0 items-center justify-center rounded-sm border peer-focus-visible:ring-3",
                                   marcado ? "bg-primary border-primary text-primary-foreground" : "border-input bg-card",
                                 )}
                               >
@@ -163,11 +159,7 @@ export function FiltrosPacientes({
               />
             )),
           )}
-          <button
-            type="button"
-            onClick={limpiarTodo}
-            className="text-muted-foreground hover:text-foreground px-1.5 text-xs font-medium underline-offset-2 hover:underline"
-          >
+          <button type="button" onClick={limpiarTodo} className="enlace px-1.5 text-[0.8125rem]">
             Limpiar todo
           </button>
         </div>
@@ -178,13 +170,13 @@ export function FiltrosPacientes({
 
 function Chip({ texto, alQuitar }: { texto: string; alQuitar: () => void }) {
   return (
-    <span className="bg-accent text-accent-foreground inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium">
+    <span className="bg-accent text-accent-foreground inline-flex h-7 items-center gap-1 rounded-[5px] pr-1 pl-2.5 text-[0.8125rem] font-medium">
       {texto}
       <button
         type="button"
         onClick={alQuitar}
         aria-label={`Quitar filtro ${texto}`}
-        className="hover:bg-foreground/10 rounded-full p-0.5"
+        className="hover:bg-foreground/10 rounded-sm p-1"
       >
         <X className="size-3" />
       </button>

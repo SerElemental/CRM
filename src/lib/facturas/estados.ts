@@ -1,4 +1,5 @@
 import type { FacturaEstado } from "@/lib/database.types";
+import type { Tono } from "@/lib/tono";
 
 export const FACTURA_ESTADOS: { value: FacturaEstado; label: string }[] = [
   { value: "emitida", label: "Emitida" },
@@ -12,11 +13,11 @@ export const FACTURA_ESTADO_LABEL: Record<FacturaEstado, string> = {
   anulada: "Anulada",
 };
 
-/** Variante del <Badge>. «Emitida» = pendiente de pago. */
-export const FACTURA_ESTADO_BADGE: Record<FacturaEstado, "warning" | "success" | "secondary"> = {
+/** Tono del punto de cada estado. «Emitida» = pendiente de pago. */
+export const FACTURA_ESTADO_TONO: Record<FacturaEstado, Tono> = {
   emitida: "warning",
   pagada: "success",
-  anulada: "secondary",
+  anulada: "outline",
 };
 
 /** Nombre corto de cada empresa, por su clave. */

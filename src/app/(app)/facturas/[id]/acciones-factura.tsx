@@ -34,7 +34,7 @@ export function AccionesFactura({
     <>
       {estado === "emitida" && (
         <Dialog open={pagar} onOpenChange={setPagar}>
-          <DialogTrigger render={<Button />}>
+          <DialogTrigger render={<Button className="order-last" />}>
             <CircleCheck /> Marcar como pagada
           </DialogTrigger>
           <DialogContent>
@@ -49,7 +49,7 @@ export function AccionesFactura({
                 await marcarFacturaPagada(id, pacienteId, fd);
                 setPagar(false);
               }}
-              className="space-y-4"
+              className="space-y-5"
             >
               <div className="space-y-1.5">
                 <Label htmlFor="fecha-pago">Fecha del pago</Label>
@@ -72,7 +72,7 @@ export function AccionesFactura({
       )}
 
       <Dialog open={anular} onOpenChange={setAnular}>
-        <DialogTrigger render={<Button variant="ghost" className="text-destructive" />}>
+        <DialogTrigger render={<Button variant="ghost" className="text-destructive order-first" />}>
           <Ban /> Anular
         </DialogTrigger>
         <DialogContent>
@@ -83,7 +83,7 @@ export function AccionesFactura({
               que cubría vuelven a quedar disponibles para facturar.
             </DialogDescription>
           </DialogHeader>
-          <form action={accionAnular} className="space-y-4">
+          <form action={accionAnular} className="space-y-5">
             <div className="space-y-1.5">
               <Label htmlFor="motivo">Motivo</Label>
               <textarea id="motivo" name="motivo" rows={2} className="control" required placeholder="Ej. valor equivocado" />

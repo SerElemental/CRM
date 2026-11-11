@@ -15,6 +15,7 @@ const mensaje = (e: { message: string; code?: string }, porDefecto: string) =>
 
 function refrescar(facturaId?: string, pacienteId?: string | null) {
   revalidatePath("/facturas");
+  revalidatePath("/inicio");
   if (facturaId) revalidatePath(`/facturas/${facturaId}`);
   if (pacienteId) revalidatePath(`/pacientes/${pacienteId}`);
 }

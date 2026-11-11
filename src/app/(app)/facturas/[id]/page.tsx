@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ExternalLink, FileDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ExternalLink, FileDown } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { Estado } from "@/components/ui/estado";
 import { formatearFecha, hoyBogota } from "@/lib/fecha";
-import { EMPRESA_LABEL, FACTURA_ESTADO_BADGE, FACTURA_ESTADO_LABEL } from "@/lib/facturas/estados";
+import { EMPRESA_LABEL, FACTURA_ESTADO_LABEL, FACTURA_ESTADO_TONO } from "@/lib/facturas/estados";
 import { facturaADatos } from "@/lib/facturas/esquema";
 import { dinero } from "@/lib/facturas/tipos";
 import { createClient } from "@/lib/supabase/server";
@@ -15,10 +15,10 @@ export const metadata: Metadata = { title: "Factura" };
 
 function Dato({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-4">
-      <dt className="text-muted-foreground shrink-0">{label}</dt>
-      <dd className="min-w-0 text-right break-words">{children ?? "—"}</dd>
-    </div>
+    <>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="break-words">{children ?? "—"}</dd>
+    </>
   );
 }
 
@@ -38,41 +38,50 @@ export default async function FacturaPage({ params }: { params: Promise<{ id: st
   const pdf = `/facturas/${id}/pdf`;
 
   return (
-    <div className="space-y-5">
-      <Link href="/facturas" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm">
-        <ChevronLeft className="size-4" /> Facturas
-      </Link>
+    <div className="space-y-6">
+      <nav aria-label="Ruta" className="text-muted-foreground flex items-center gap-2 text-[0.8125rem]">
+        <Link href="/facturas" className="enlace">Facturas</Link>
+        <span aria-hidden>/</span>
+        <span>{f.numero}</span>
+      </nav>
 
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-2">
-          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{datos.emisor.nombreDocumento}</p>
-          <h1 className="text-2xl font-semibold tracking-tight tabular-nums">{f.numero}</h1>
-          <Badge variant={FACTURA_ESTADO_BADGE[f.estado]}>{FACTURA_ESTADO_LABEL[f.estado]}</Badge>
+      <header className="flex flex-wrap items-end justify-between gap-5">
+        <div className="space-y-1.5">
+          <p className="rotulo">{datos.emisor.nombreDocumento}</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <h1 className="titulo tabular-nums">{f.numero}</h1>
+            <Estado tono={FACTURA_ESTADO_TONO[f.estado]} className="border-border bg-card h-7 rounded-[5px] border px-2.5 text-[0.8125rem] font-medium">
+              {FACTURA_ESTADO_LABEL[f.estado]}{f.estado === "emitida" && " · pendiente de pago"}
+            </Estado>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <AccionesFactura id={id} numero={f.numero} estado={f.estado} pacienteId={f.paciente_id} hoy={hoyBogota()} />
+        <div className="flex flex-wrap items-center gap-2.5">
           <a href={`${pdf}?descargar=1`} className={buttonVariants({ variant: "outline" })}>
             <FileDown /> Descargar PDF
           </a>
+          <AccionesFactura id={id} numero={f.numero} estado={f.estado} pacienteId={f.paciente_id} hoy={hoyBogota()} />
         </div>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[20rem_1fr]">
-        <section className="bg-card ring-foreground/[0.06] h-fit rounded-xl p-5 shadow-sm ring-1">
-          <dl className="space-y-2.5 text-sm">
-            <Dato label="Total">
-              <span className="font-semibold tabular-nums">{dinero(Number(f.total), f.moneda)}</span>{" "}
-              <span className="text-muted-foreground text-xs">{f.moneda}</span>
-            </Dato>
+      <div className="flex flex-col gap-7 lg:flex-row lg:items-start">
+        <aside aria-label="Datos de la factura" className="panel w-full shrink-0 lg:w-80">
+          <div className="border-border space-y-1 border-b px-5 py-5">
+            <p className="rotulo">Total</p>
+            <p className="text-[2rem] leading-tight font-semibold tracking-[-0.02em] tabular-nums">
+              <span className={f.estado === "anulada" ? "text-muted-foreground line-through" : undefined}>
+                {dinero(Number(f.total), f.moneda)}
+              </span>{" "}
+              <span className="text-muted-foreground text-sm font-normal tracking-normal">{f.moneda}</span>
+            </p>
+          </div>
+          <dl className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-x-3 gap-y-2.5 px-5 py-5 text-[0.84rem]">
             <Dato label="Fecha de emisión">{formatearFecha(f.fecha)}</Dato>
             <Dato label="Empresa">{EMPRESA_LABEL[f.emisor_clave] ?? f.emisor_clave} · {datos.emisor.razonSocial}</Dato>
             <Dato label="A nombre de">{datos.cliente.nombre}</Dato>
             {datos.cliente.identificacion && <Dato label="Identificación">{datos.cliente.identificacion}</Dato>}
             <Dato label="Paciente">
               {paciente ? (
-                <Link href={`/pacientes/${paciente.id}`} className="hover:text-primary underline underline-offset-2">
-                  {paciente.nombre_completo}
-                </Link>
+                <Link href={`/pacientes/${paciente.id}`} className="enlace">{paciente.nombre_completo}</Link>
               ) : "No es de un paciente"}
             </Dato>
             {(sesiones ?? 0) > 0 && <Dato label="Sesiones que cubre">{sesiones}</Dato>}
@@ -85,14 +94,19 @@ export default async function FacturaPage({ params }: { params: Promise<{ id: st
             )}
             {f.notas && <Dato label="Observaciones">{f.notas}</Dato>}
           </dl>
-        </section>
+          {f.estado === "emitida" && (sesiones ?? 0) > 0 && (
+            <p className="text-muted-foreground border-border border-t px-5 py-4 text-[0.8125rem]">
+              Al marcarla como pagada, las sesiones que cubre quedan pagadas en la ficha.
+            </p>
+          )}
+        </aside>
 
-        <section className="space-y-2">
-          <div className="border-border bg-card overflow-hidden rounded-xl border shadow-sm">
+        <section aria-label="Documento" className="min-w-0 flex-1 space-y-2.5">
+          <div className="border-input bg-card overflow-hidden rounded-sm border">
             <iframe src={pdf} title={`PDF de ${f.numero}`} className="h-[78vh] min-h-[32rem] w-full" />
           </div>
-          <a href={pdf} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs">
-            <ExternalLink className="size-3" /> Abrir el PDF en otra pestaña
+          <a href={pdf} target="_blank" rel="noreferrer" className="enlace inline-flex items-center gap-1.5 text-[0.8125rem]">
+            <ExternalLink className="size-3.5" /> Abrir el PDF en otra pestaña
           </a>
         </section>
       </div>

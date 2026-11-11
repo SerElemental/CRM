@@ -27,10 +27,15 @@ export function estadoVisual(s: Pick<Sesion, "asistencia" | "pago">): EstadoVisu
   return "pagada";
 }
 
-export const ESTADO_VISUAL: Record<EstadoVisual, { label: string; punto: string }> = {
-  pagada: { label: "Realizada y pagada", punto: "bg-success" },
-  paquete: { label: "Realizada (paquete)", punto: "bg-info" },
-  sin_pagar: { label: "Realizada, sin pagar", punto: "bg-warning" },
-  prepagada: { label: "Prepagada, por tener", punto: "border-2 border-info bg-transparent" },
-  perdida: { label: "Perdida", punto: "bg-destructive" },
+/**
+ * `casilla` pinta el cuadro numerado de cada sesión. Los estados se distinguen
+ * también por claridad y por el borde (lleno, claro, punteado, solo contorno),
+ * no solo por el color.
+ */
+export const ESTADO_VISUAL: Record<EstadoVisual, { label: string; casilla: string }> = {
+  pagada: { label: "Realizada y pagada", casilla: "border-success bg-success text-white" },
+  paquete: { label: "Realizada (paquete)", casilla: "border-info/45 bg-info/25 text-foreground" },
+  sin_pagar: { label: "Realizada, sin pagar", casilla: "border-warning bg-warning/30 text-foreground" },
+  prepagada: { label: "Prepagada, por tener", casilla: "border-dashed border-info bg-card text-info-foreground" },
+  perdida: { label: "Perdida", casilla: "border-destructive bg-card text-destructive" },
 };

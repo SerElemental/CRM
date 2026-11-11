@@ -1,108 +1,108 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { iniciales } from "@/components/ui/iniciales";
 import { NAV } from "@/lib/nav";
 import { cerrarSesion } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
 
-function iniciales(nombre: string) {
-  return nombre
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("");
-}
+const LOGO = { src: "/marca/logo-ser-elemental-transparente.png", width: 2160, height: 383 };
 
+/**
+ * Marco de la app. En escritorio, menú lateral rosa con el logo; en el móvil,
+ * barra superior con el logo y navegación fija abajo (sin menú escondido).
+ */
 export function AppShell({ nombre, children }: { nombre: string; children: React.ReactNode }) {
   const pathname = usePathname();
-  const [abierto, setAbierto] = useState(false);
+  const esActivo = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <div className="flex min-h-screen">
-      <aside
-        className={cn(
-          "bg-sidebar text-sidebar-foreground border-sidebar-border fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r transition-transform duration-200 md:static md:translate-x-0",
-          abierto ? "translate-x-0" : "-translate-x-full",
-        )}
-      >
-        <div className="flex h-16 items-center justify-between px-5">
-          <Link href="/pacientes" className="leading-tight" onClick={() => setAbierto(false)}>
-            <span className="block text-base font-semibold tracking-tight">Ser Elemental</span>
-            <span className="text-sidebar-foreground/60 block text-xs">CRM del consultorio</span>
-          </Link>
-          <button
-            type="button"
-            className="text-sidebar-foreground/70 md:hidden"
-            onClick={() => setAbierto(false)}
-            aria-label="Cerrar menú"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <aside className="bg-sidebar text-sidebar-foreground sticky top-0 hidden h-screen w-58 shrink-0 flex-col gap-8 px-4 pt-7 pb-5 md:flex">
+        <Link href="/inicio" className="block px-2.5">
+          <Image src={LOGO.src} alt="Ser Elemental" width={LOGO.width} height={LOGO.height} priority className="h-auto w-[10.75rem]" />
+        </Link>
 
-        <nav className="flex-1 space-y-1 px-3 py-2">
+        <nav aria-label="Principal" className="flex flex-col gap-0.5">
           {NAV.map((item) => {
-            const activo = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const activo = esActivo(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setAbierto(false)}
                 aria-current={activo ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "flex h-11 items-center gap-3 rounded-lg px-3 text-[0.9rem] transition-colors",
                   activo
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                    : "hover:bg-sidebar-accent/45 font-medium",
                 )}
               >
-                <item.icon className={cn("size-4", activo && "text-sidebar-primary")} />
+                <item.icon className="size-[1.125rem]" strokeWidth={activo ? 2 : 1.7} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-sidebar-border flex items-center gap-3 border-t p-4">
-          <span className="bg-sidebar-primary text-sidebar-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold">
+        <div className="border-sidebar-border mt-auto flex items-center gap-2.5 border-t px-1.5 pt-4">
+          <span className="bg-sidebar-primary text-sidebar-primary-foreground flex size-[2.125rem] shrink-0 items-center justify-center rounded-full text-[0.78rem] font-semibold">
             {iniciales(nombre) || "SE"}
           </span>
           <span className="min-w-0 flex-1 truncate text-sm font-medium">{nombre}</span>
           <form action={cerrarSesion}>
             <button
               type="submit"
-              className="text-sidebar-foreground/70 hover:text-sidebar-foreground rounded-md p-1.5"
+              className="hover:bg-sidebar-accent/45 flex size-9 items-center justify-center rounded-lg"
               aria-label="Cerrar sesión"
               title="Cerrar sesión"
             >
-              <LogOut className="size-4" />
+              <LogOut className="size-[1.05rem]" />
             </button>
           </form>
         </div>
       </aside>
 
-      {abierto && (
-        <button
-          type="button"
-          aria-label="Cerrar menú"
-          className="fixed inset-0 z-30 bg-black/40 md:hidden"
-          onClick={() => setAbierto(false)}
-        />
-      )}
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="bg-card border-border flex h-14 items-center gap-3 border-b px-4 md:hidden">
-          <button type="button" onClick={() => setAbierto(true)} aria-label="Abrir menú">
-            <Menu className="size-5" />
+      <header className="bg-sidebar text-sidebar-foreground sticky top-0 z-30 flex h-15 items-center justify-between pr-2 pl-4 md:hidden">
+        <Link href="/inicio">
+          <Image src={LOGO.src} alt="Ser Elemental" width={LOGO.width} height={LOGO.height} priority className="h-7 w-auto" />
+        </Link>
+        <form action={cerrarSesion}>
+          <button type="submit" className="flex size-11 items-center justify-center" aria-label="Cerrar sesión" title="Cerrar sesión">
+            <LogOut className="size-5" />
           </button>
-          <span className="text-sm font-semibold">Ser Elemental</span>
-        </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
+        </form>
+      </header>
+
+      <div className="min-w-0 flex-1">
+        <main className="mx-auto w-full max-w-[75rem] px-4 pt-6 pb-28 md:px-10 md:pt-10 md:pb-14">{children}</main>
       </div>
+
+      <nav
+        aria-label="Principal"
+        className="bg-card border-input fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t pb-[env(safe-area-inset-bottom)] md:hidden"
+      >
+        {NAV.map((item) => {
+          const activo = esActivo(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={activo ? "page" : undefined}
+              className={cn(
+                "flex h-16 flex-col items-center justify-center gap-1 text-xs",
+                activo ? "text-foreground font-semibold shadow-[inset_0_2px_0_var(--foreground)]" : "text-secondary-foreground font-medium",
+              )}
+            >
+              <item.icon className="size-5" strokeWidth={activo ? 2 : 1.7} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

@@ -34,45 +34,42 @@ export function FiltrosFacturas({ activos, empresas }: { activos: FiltrosFactura
   const hay = Boolean(activos.q || activos.mes || activos.empresa || activos.estado);
 
   return (
-    <section
-      aria-label="Buscar y filtrar facturas"
-      className="bg-card ring-foreground/[0.06] grid gap-3 rounded-xl p-4 shadow-sm ring-1 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto_auto] lg:items-center"
-    >
-      <div className="relative sm:col-span-2 lg:col-span-1">
-        <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-3 size-4" />
+    <section aria-label="Buscar y filtrar facturas" className="flex flex-wrap items-center gap-2.5">
+      <div className="relative min-w-0 flex-[1_1_17.5rem]">
+        <Search className="text-muted-foreground pointer-events-none absolute top-3 left-3.5 size-4" />
         <Input
           type="search" value={texto} onChange={(e) => setTexto(e.target.value)}
-          placeholder="Buscar por número, cliente o paciente" aria-label="Buscar factura" className="pr-10 pl-9"
+          placeholder="Buscar por número, cliente o paciente" aria-label="Buscar factura" className="pr-10 pl-10"
         />
-        {pendiente && <Loader2 className="text-muted-foreground absolute top-2.5 right-10 size-4 animate-spin" />}
+        {pendiente && <Loader2 className="text-muted-foreground absolute top-3 right-10 size-4 animate-spin" />}
       </div>
       <Input
-        type="month" value={activos.mes} aria-label="Mes" className="lg:w-44"
+        type="month" value={activos.mes} aria-label="Mes" className="w-full sm:w-44"
         onChange={(e) => ir({ ...activos, mes: e.target.value })}
       />
       <select
-        value={activos.empresa} aria-label="Empresa" className="control lg:w-40"
+        value={activos.empresa} aria-label="Empresa" className="control sm:w-44"
         onChange={(e) => ir({ ...activos, empresa: e.target.value })}
       >
         <option value="">Todas las empresas</option>
         {empresas.map((c) => <option key={c} value={c}>{EMPRESA_LABEL[c] ?? c}</option>)}
       </select>
       <select
-        value={activos.estado} aria-label="Estado" className="control lg:w-40"
+        value={activos.estado} aria-label="Estado" className="control sm:w-44"
         onChange={(e) => ir({ ...activos, estado: e.target.value })}
       >
         <option value="">Todos los estados</option>
         {FACTURA_ESTADOS.map((e) => <option key={e.value} value={e.value}>{e.label}</option>)}
       </select>
-      {hay ? (
+      {hay && (
         <button
           type="button"
           onClick={() => { setTexto(""); ir({ q: "", mes: "", empresa: "", estado: "" }); }}
-          className="text-muted-foreground hover:text-foreground justify-self-start text-xs font-medium underline-offset-2 hover:underline"
+          className="enlace px-1.5 text-[0.8125rem]"
         >
           Limpiar
         </button>
-      ) : <span />}
+      )}
     </section>
   );
 }

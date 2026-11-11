@@ -3,10 +3,10 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Estado } from "@/components/ui/estado";
 import { Input } from "@/components/ui/input";
 import type { PacienteEstado } from "@/lib/database.types";
-import { ESTADO_BADGE, ESTADO_LABEL } from "@/lib/pacientes";
+import { ESTADO_LABEL, ESTADO_TONO } from "@/lib/pacientes";
 import { MIN_LETRAS, detalleSugerencia, resaltar, type Sugerencia } from "@/lib/sugerencias";
 import { cn } from "@/lib/utils";
 
@@ -21,11 +21,14 @@ type Resultado = { consulta: string; sugerencias: Sugerencia[]; total: number };
  * (eso lo hace el componente padre con `alCambiar`).
  */
 export function BuscadorPacientes({
-  valor, alCambiar, pendiente,
+  valor, alCambiar, pendiente, alEnviar, placeholder = "Buscar por nombre, teléfono o correo",
 }: {
   valor: string;
   alCambiar: (texto: string) => void;
   pendiente: boolean;
+  /** Enter sin sugerencia elegida. En el listado no hace falta: ya está filtrado. */
+  alEnviar?: (texto: string) => void;
+  placeholder?: string;
 }) {
   const router = useRouter();
   const idLista = useId();
@@ -105,13 +108,16 @@ export function BuscadorPacientes({
     if (e.key === "Enter") {
       e.preventDefault();
       if (visible && activo >= 0 && sugerencias[activo]) abrirFicha(sugerencias[activo]);
-      else setAbierto(false); // el listado de abajo ya está filtrado con este texto
+      else {
+        setAbierto(false); // en el listado, lo de abajo ya está filtrado con este texto
+        alEnviar?.(consulta);
+      }
     }
   };
 
   return (
     <div ref={caja} className="relative">
-      <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-3 size-4" />
+      <Search className="text-muted-foreground pointer-events-none absolute top-3 left-3.5 size-4" />
       <Input
         type="search"
         role="combobox"
@@ -128,16 +134,16 @@ export function BuscadorPacientes({
         }}
         onFocus={() => setAbierto(true)}
         onKeyDown={alTeclear}
-        placeholder="Buscar por nombre, teléfono o correo"
-        className="pr-16 pl-9"
+        placeholder={placeholder}
+        className="pr-16 pl-10"
       />
       {/* A la izquierda de la «x» de borrar que pone el navegador en los campos de búsqueda. */}
       {(pendiente || buscando) && (
-        <Loader2 className="text-muted-foreground absolute top-2.5 right-10 size-4 animate-spin" aria-label="Buscando" />
+        <Loader2 className="text-muted-foreground absolute top-3 right-10 size-4 animate-spin" aria-label="Buscando" />
       )}
 
       {visible && (
-        <div className="bg-popover text-popover-foreground ring-foreground/10 absolute inset-x-0 top-full z-40 mt-1.5 overflow-hidden rounded-xl shadow-lg ring-1">
+        <div className="bg-popover text-popover-foreground ring-foreground/10 absolute inset-x-0 top-full z-40 mt-1.5 overflow-hidden rounded-xl text-left shadow-lg ring-1">
           {sinResultados ? (
             <p className="text-muted-foreground px-3.5 py-3 text-sm">
               Ningún paciente coincide con «{consulta}».
@@ -179,9 +185,9 @@ export function BuscadorPacientes({
                         </p>
                       )}
                     </div>
-                    <Badge variant={ESTADO_BADGE[s.estado as PacienteEstado] ?? "secondary"}>
+                    <Estado tono={ESTADO_TONO[s.estado as PacienteEstado] ?? "neutral"} className="text-secondary-foreground text-xs">
                       {ESTADO_LABEL[s.estado as PacienteEstado] ?? s.estado}
-                    </Badge>
+                    </Estado>
                   </li>
                 );
               })}

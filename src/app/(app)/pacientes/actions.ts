@@ -68,6 +68,7 @@ async function guardar(id: string | null, formData: FormData): Promise<PacienteF
   }
 
   revalidatePath("/pacientes");
+  revalidatePath("/inicio");
   revalidatePath(`/pacientes/${data.id}`);
   redirect(`/pacientes/${data.id}`);
 }
@@ -90,4 +91,5 @@ export async function marcarFlyerEnviado(id: string) {
     .eq("id", id);
   revalidatePath(`/pacientes/${id}`);
   revalidatePath("/pacientes");
+  revalidatePath("/inicio");
 }

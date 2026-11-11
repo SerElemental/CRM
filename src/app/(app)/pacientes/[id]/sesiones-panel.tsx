@@ -1,18 +1,20 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { CalendarPlus, PackagePlus, Pencil } from "lucide-react";
+import { CalendarPlus, Pencil, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Estado } from "@/components/ui/estado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Segmentado } from "@/components/ui/segmentado";
 import type { Sesion } from "@/lib/database.types";
 import { formatearFecha } from "@/lib/fecha";
-import { ASISTENCIA_LABEL, ESTADO_VISUAL, PAGO_LABEL, estadoVisual, type EstadoVisual } from "@/lib/sesiones";
+import { ASISTENCIA_LABEL, ESTADO_VISUAL, estadoVisual, type EstadoVisual } from "@/lib/sesiones";
 import { cn } from "@/lib/utils";
 import {
   cobrarSesion, editarSesion, eliminarSesion, registrarPaquete, registrarSesion, type SesionState,
@@ -20,8 +22,6 @@ import {
 
 /** Cuántas sesiones se ven en la tabla antes de «ver anteriores». */
 const RECIENTES = 12;
-
-type Resumen = { realizadas: number; porCobrar: number; prepagadas: number; perdidas: number };
 
 /** Formulario dentro de un diálogo: lo cierra cuando la acción termina bien. */
 function useAccion(accion: (fd: FormData) => Promise<SesionState>, alTerminar: () => void) {
@@ -38,76 +38,85 @@ function ErrorForm({ state }: { state: SesionState }) {
   ) : null;
 }
 
-function Contador({ valor, titulo, detalle, tono }: { valor: number; titulo: string; detalle: string; tono?: string }) {
-  return (
-    <div className="bg-card ring-foreground/[0.06] rounded-xl p-4 shadow-sm ring-1">
-      <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{titulo}</p>
-      <p className={cn("mt-1 text-3xl font-semibold tabular-nums", valor > 0 && tono)}>{valor}</p>
-      <p className="text-muted-foreground mt-0.5 text-xs">{detalle}</p>
-    </div>
-  );
-}
-
-function RegistrarSesion({ pacienteId, hoy, prepagadas }: { pacienteId: string; hoy: string; prepagadas: number }) {
+/** La acción más frecuente del CRM: vive en el encabezado de la ficha. */
+export function RegistrarSesion({
+  pacienteId, nombre, hoy, prepagadas, className,
+}: {
+  pacienteId: string; nombre: string; hoy: string; prepagadas: number; className?: string;
+}) {
   const [abierto, setAbierto] = useState(false);
-  const [asistencia, setAsistencia] = useState<"realizada" | "perdida">("realizada");
+  const [asistencia, setAsistencia] = useState("realizada");
   const [state, action, pendiente] = useAccion(registrarSesion, () => setAbierto(false));
 
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
-      <DialogTrigger render={<Button />}>
-        <CalendarPlus /> Registrar sesión
+      <DialogTrigger render={<Button className={className} />}>
+        <Plus strokeWidth={2.2} /> Registrar sesión
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Registrar sesión</DialogTitle>
           <DialogDescription>
+            {nombre} ·{" "}
             {prepagadas > 0
-              ? `Se descuenta del paquete: quedan ${prepagadas} ${prepagadas === 1 ? "sesión prepagada" : "sesiones prepagadas"}.`
-              : "Queda como la siguiente sesión del proceso."}
+              ? `se descuenta del paquete: quedan ${prepagadas} ${prepagadas === 1 ? "sesión prepagada" : "sesiones prepagadas"}.`
+              : "queda como la siguiente sesión del proceso."}
           </DialogDescription>
         </DialogHeader>
-        <form action={action} className="space-y-4">
+        <form action={action} className="space-y-5">
           <input type="hidden" name="paciente_id" value={pacienteId} />
           <div className="space-y-1.5">
             <Label htmlFor="rs-fecha">Fecha</Label>
-            <Input id="rs-fecha" name="fecha" type="date" defaultValue={hoy} max={hoy} required />
+            <Input id="rs-fecha" name="fecha" type="date" defaultValue={hoy} max={hoy} required className="h-11" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="rs-asistencia">¿Qué pasó?</Label>
-            <select
-              id="rs-asistencia" name="asistencia" className="control"
-              value={asistencia} onChange={(e) => setAsistencia(e.target.value as "realizada" | "perdida")}
-            >
-              <option value="realizada">La sesión se realizó</option>
-              <option value="perdida">No asistió (sesión perdida)</option>
-            </select>
+            <Label id="rs-asistencia">¿Qué pasó?</Label>
+            <Segmentado
+              name="asistencia" aria-labelledby="rs-asistencia" value={asistencia} onChange={setAsistencia}
+              opciones={[
+                { value: "realizada", label: "La sesión se realizó" },
+                { value: "perdida", label: "No asistió" },
+              ]}
+            />
           </div>
           {prepagadas > 0 ? (
             <input type="hidden" name="pago" value="pagada" />
           ) : (
             <div className="space-y-1.5">
-              <Label htmlFor="rs-pago">Pago</Label>
+              <Label id="rs-pago">Pago</Label>
+              {/* La `key` vuelve a montar el control al cambiar la asistencia: las opciones son otras. */}
               {asistencia === "realizada" ? (
-                <select id="rs-pago" name="pago" className="control" defaultValue="pagada" key="realizada">
-                  <option value="pagada">Pagada</option>
-                  <option value="sin_pagar">Sin pagar (queda por cobrar)</option>
-                </select>
+                <Segmentado
+                  key="realizada" name="pago" aria-labelledby="rs-pago" defaultValue="pagada"
+                  opciones={[
+                    { value: "pagada", label: "Pagada" },
+                    { value: "sin_pagar", label: "Sin pagar" },
+                  ]}
+                />
               ) : (
-                <select id="rs-pago" name="pago" className="control" defaultValue="no_aplica" key="perdida">
-                  <option value="no_aplica">Sin cobro</option>
-                  <option value="sin_pagar">Con multa por cobrar</option>
-                </select>
+                <Segmentado
+                  key="perdida" name="pago" aria-labelledby="rs-pago" defaultValue="no_aplica"
+                  opciones={[
+                    { value: "no_aplica", label: "Sin cobro" },
+                    { value: "sin_pagar", label: "Con multa por cobrar" },
+                  ]}
+                />
               )}
+              <p className="text-muted-foreground text-[0.8125rem]">
+                {asistencia === "realizada"
+                  ? "«Sin pagar» la deja en por cobrar hasta que la cobres o la factures."
+                  : "La multa queda en por cobrar, igual que una sesión sin pagar."}
+              </p>
             </div>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="rs-nota">Nota (opcional)</Label>
+            <Label htmlFor="rs-nota">Nota <span className="text-muted-foreground font-normal">(opcional)</span></Label>
             <textarea id="rs-nota" name="nota" rows={2} className="control" />
           </div>
           <ErrorForm state={state} />
           <DialogFooter>
-            <Button type="submit" disabled={pendiente}>{pendiente ? "Guardando…" : "Registrar"}</Button>
+            <Button type="button" variant="outline" onClick={() => setAbierto(false)}>Cancelar</Button>
+            <Button type="submit" disabled={pendiente}>{pendiente ? "Guardando…" : "Registrar sesión"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -115,14 +124,14 @@ function RegistrarSesion({ pacienteId, hoy, prepagadas }: { pacienteId: string; 
   );
 }
 
-function RegistrarPaquete({ pacienteId }: { pacienteId: string }) {
+export function RegistrarPaquete({ pacienteId, className }: { pacienteId: string; className?: string }) {
   const [abierto, setAbierto] = useState(false);
   const [state, action, pendiente] = useAccion(registrarPaquete, () => setAbierto(false));
 
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
-      <DialogTrigger render={<Button variant="outline" />}>
-        <PackagePlus /> Registrar paquete
+      <DialogTrigger render={<Button variant="outline" className={className} />}>
+        Registrar paquete
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -131,18 +140,19 @@ function RegistrarPaquete({ pacienteId }: { pacienteId: string }) {
             Sesiones pagadas por adelantado. Quedan disponibles y se van descontando al registrar cada sesión.
           </DialogDescription>
         </DialogHeader>
-        <form action={action} className="space-y-4">
+        <form action={action} className="space-y-5">
           <input type="hidden" name="paciente_id" value={pacienteId} />
           <div className="space-y-1.5">
             <Label htmlFor="rp-cantidad">Número de sesiones</Label>
-            <Input id="rp-cantidad" name="cantidad" type="number" min={1} max={50} defaultValue={4} required />
+            <Input id="rp-cantidad" name="cantidad" type="number" min={1} max={50} defaultValue={4} required className="h-11" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="rp-nota">Nota (opcional)</Label>
+            <Label htmlFor="rp-nota">Nota <span className="text-muted-foreground font-normal">(opcional)</span></Label>
             <textarea id="rp-nota" name="nota" rows={2} className="control" />
           </div>
           <ErrorForm state={state} />
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setAbierto(false)}>Cancelar</Button>
             <Button type="submit" disabled={pendiente}>{pendiente ? "Guardando…" : "Registrar paquete"}</Button>
           </DialogFooter>
         </form>
@@ -163,7 +173,9 @@ function EditarSesion({ sesion }: { sesion: Sesion }) {
 
   return (
     <Dialog open={abierto} onOpenChange={(v) => { setAbierto(v); setConfirmar(false); }}>
-      <DialogTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Editar sesión ${sesion.numero}`} />}>
+      <DialogTrigger
+        render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground" aria-label={`Editar sesión ${sesion.numero}`} />}
+      >
         <Pencil />
       </DialogTrigger>
       <DialogContent>
@@ -171,31 +183,32 @@ function EditarSesion({ sesion }: { sesion: Sesion }) {
           <DialogTitle>Sesión {sesion.numero}</DialogTitle>
           {sesion.origen === "excel" && <DialogDescription>Importada del Excel.</DialogDescription>}
         </DialogHeader>
-        <form action={action} className="space-y-4">
+        <form action={action} className="space-y-5">
           <input type="hidden" name="id" value={sesion.id} />
           <input type="hidden" name="paciente_id" value={sesion.paciente_id} />
           <div className="space-y-1.5">
             <Label htmlFor={`es-fecha-${sesion.id}`}>Fecha</Label>
             <Input id={`es-fecha-${sesion.id}`} name="fecha" type="date" defaultValue={sesion.fecha ?? ""} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor={`es-asis-${sesion.id}`}>Asistencia</Label>
-              <select id={`es-asis-${sesion.id}`} name="asistencia" className="control" defaultValue={sesion.asistencia}>
-                <option value="realizada">Realizada</option>
-                <option value="pendiente">Pendiente (por tener)</option>
-                <option value="perdida">Perdida</option>
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor={`es-pago-${sesion.id}`}>Pago</Label>
-              <select id={`es-pago-${sesion.id}`} name="pago" className="control" defaultValue={sesion.pago}>
-                <option value="pagada">Pagada</option>
-                <option value="paquete">Paquete (por adelantado)</option>
-                <option value="sin_pagar">Sin pagar</option>
-                <option value="no_aplica">No aplica</option>
-              </select>
-            </div>
+          <div className="space-y-1.5">
+            <Label id={`es-asis-${sesion.id}`}>Asistencia</Label>
+            <Segmentado
+              name="asistencia" aria-labelledby={`es-asis-${sesion.id}`} defaultValue={sesion.asistencia}
+              opciones={[
+                { value: "realizada", label: "Realizada" },
+                { value: "pendiente", label: "Pendiente" },
+                { value: "perdida", label: "Perdida" },
+              ]}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`es-pago-${sesion.id}`}>Pago</Label>
+            <select id={`es-pago-${sesion.id}`} name="pago" className="control" defaultValue={sesion.pago}>
+              <option value="pagada">Pagada</option>
+              <option value="paquete">Paquete (por adelantado)</option>
+              <option value="sin_pagar">Sin pagar</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor={`es-nota-${sesion.id}`}>Nota</Label>
@@ -226,14 +239,26 @@ function EditarSesion({ sesion }: { sesion: Sesion }) {
   );
 }
 
+function Pago({ sesion, pacienteId }: { sesion: Sesion; pacienteId: string }) {
+  if (sesion.pago === "sin_pagar") {
+    return (
+      <form action={cobrarSesion.bind(null, pacienteId, sesion.id)} className="flex items-center gap-2.5">
+        <Badge variant="warning">Sin pagar</Badge>
+        <Button type="submit" variant="outline" size="xs">Cobrar</Button>
+      </form>
+    );
+  }
+  if (sesion.pago === "paquete") return <Badge variant="info">Paquete</Badge>;
+  if (sesion.pago === "pagada") return <Estado tono="success">Pagada</Estado>;
+  return <span className="text-muted-foreground">Sin cobro</span>;
+}
+
 export function SesionesPanel({
-  pacienteId, sesiones, resumen, hoy,
+  pacienteId, sesiones,
 }: {
   pacienteId: string;
   /** Ordenadas de la más reciente a la más antigua. */
   sesiones: Sesion[];
-  resumen: Resumen;
-  hoy: string;
 }) {
   const enOrden = [...sesiones].reverse();
   const presentes = new Set(sesiones.map(estadoVisual));
@@ -243,24 +268,18 @@ export function SesionesPanel({
   const ocultas = sesiones.length - visibles.length;
 
   return (
-    <section className="space-y-4" aria-labelledby="sesiones-titulo">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="sesiones-titulo" className="text-lg font-semibold tracking-tight">Sesiones</h2>
-        <div className="flex flex-wrap gap-2">
-          <RegistrarPaquete pacienteId={pacienteId} />
-          <RegistrarSesion pacienteId={pacienteId} hoy={hoy} prepagadas={resumen.prepagadas} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Contador valor={resumen.realizadas} titulo="Realizadas" detalle="sesiones que ya tuvo" />
-        <Contador valor={resumen.porCobrar} titulo="Por cobrar" detalle="tenidas y sin pagar" tono="text-warning-foreground" />
-        <Contador valor={resumen.prepagadas} titulo="Prepagadas" detalle="pagadas, por tener" tono="text-info" />
-        <Contador valor={resumen.perdidas} titulo="Perdidas" detalle="no asistió" tono="text-destructive" />
+    <section className="space-y-3.5" aria-labelledby="sesiones-titulo">
+      <div className="flex items-baseline gap-3">
+        <h2 id="sesiones-titulo" className="text-[1.1875rem] font-semibold tracking-[-0.01em]">Sesiones</h2>
+        {sesiones.length > 0 && (
+          <span className="text-muted-foreground text-[0.8125rem]">
+            {sesiones.length} {sesiones.length === 1 ? "registrada" : "registradas"}
+          </span>
+        )}
       </div>
 
       {sesiones.length === 0 ? (
-        <div className="tabla-wrap">
+        <div className="panel">
           <EmptyState
             icon={CalendarPlus}
             title="Aún no hay sesiones"
@@ -269,26 +288,30 @@ export function SesionesPanel({
         </div>
       ) : (
         <>
-          {/* Tira: un punto por sesión, de la primera a la última. */}
-          <div className="bg-card ring-foreground/[0.06] rounded-xl p-4 shadow-sm ring-1">
-            <ol className="flex flex-wrap gap-1.5" aria-label="Línea de sesiones, de la primera a la última">
+          {/* Línea: una casilla numerada por sesión, de la primera a la última. */}
+          <div className="panel space-y-3.5 px-5 py-[1.125rem]">
+            <ol className="flex flex-wrap gap-[5px]" aria-label="Línea de sesiones, de la primera a la última">
               {enOrden.map((s) => {
                 const v = estadoVisual(s);
                 return (
                   <li
                     key={s.id}
                     title={`Sesión ${s.numero} · ${ESTADO_VISUAL[v].label}${s.fecha ? ` · ${formatearFecha(s.fecha)}` : ""}`}
-                    className={cn("size-3 rounded-full", ESTADO_VISUAL[v].punto)}
+                    className={cn(
+                      "flex size-7 items-center justify-center rounded-[5px] border font-mono text-[0.72rem]",
+                      ESTADO_VISUAL[v].casilla,
+                    )}
                   >
+                    <span aria-hidden>{s.numero}</span>
                     <span className="sr-only">Sesión {s.numero}: {ESTADO_VISUAL[v].label}</span>
                   </li>
                 );
               })}
             </ol>
-            <ul className="text-muted-foreground mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <ul className="text-secondary-foreground flex flex-wrap gap-x-[1.125rem] gap-y-1.5 text-[0.8125rem]">
               {(Object.keys(ESTADO_VISUAL) as EstadoVisual[]).filter((k) => presentes.has(k)).map((k) => (
                 <li key={k} className="flex items-center gap-1.5">
-                  <span className={cn("size-2.5 rounded-full", ESTADO_VISUAL[k].punto)} /> {ESTADO_VISUAL[k].label}
+                  <span aria-hidden className={cn("size-3 rounded-[3px] border", ESTADO_VISUAL[k].casilla)} /> {ESTADO_VISUAL[k].label}
                 </li>
               ))}
             </ul>
@@ -298,7 +321,7 @@ export function SesionesPanel({
             <table className="tabla">
               <thead>
                 <tr>
-                  <th className="w-14">#</th>
+                  <th className="w-14">N.º</th>
                   <th>Fecha</th>
                   <th>Asistencia</th>
                   <th>Pago</th>
@@ -309,36 +332,26 @@ export function SesionesPanel({
               <tbody>
                 {visibles.map((s) => (
                   <tr key={s.id}>
-                    <td className="text-muted-foreground tabular-nums">{s.numero}</td>
+                    <td className="text-muted-foreground font-mono text-[0.8125rem]">{s.numero}</td>
                     <td className="whitespace-nowrap">{formatearFecha(s.fecha)}</td>
-                    <td>
-                      <Badge variant={s.asistencia === "realizada" ? "secondary" : s.asistencia === "perdida" ? "destructive" : "outline"}>
-                        {ASISTENCIA_LABEL[s.asistencia]}
-                      </Badge>
-                    </td>
-                    <td>
-                      {s.pago === "sin_pagar" ? (
-                        <form action={cobrarSesion.bind(null, pacienteId, s.id)} className="flex items-center gap-2">
-                          <Badge variant="warning">Sin pagar</Badge>
-                          <Button type="submit" variant="outline" size="xs">Cobrar</Button>
-                        </form>
-                      ) : s.pago === "no_aplica" ? (
-                        <span className="text-muted-foreground">—</span>
-                      ) : (
-                        <Badge variant={s.pago === "paquete" ? "outline" : "success"} className={s.pago === "paquete" ? "border-info/40 text-info" : undefined}>
-                          {PAGO_LABEL[s.pago]}
-                        </Badge>
+                    <td
+                      className={cn(
+                        s.asistencia === "perdida" && "text-destructive font-medium",
+                        s.asistencia === "pendiente" && "text-muted-foreground",
                       )}
+                    >
+                      {ASISTENCIA_LABEL[s.asistencia]}
                     </td>
-                    <td className="text-muted-foreground max-w-xs text-xs">{s.nota}</td>
-                    <td className="text-right"><EditarSesion sesion={s} /></td>
+                    <td><Pago sesion={s} pacienteId={pacienteId} /></td>
+                    <td className="text-muted-foreground max-w-xs text-[0.8125rem]">{s.nota}</td>
+                    <td className="py-1.5! pl-0! text-right"><EditarSesion sesion={s} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {(ocultas > 0 || verTodas) && sesiones.length > RECIENTES && (
-              <div className="border-border border-t p-2 text-center">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setVerTodas((v) => !v)}>
+              <div className="border-border border-t p-1.5 text-center">
+                <Button type="button" variant="ghost" className="text-link" onClick={() => setVerTodas((v) => !v)}>
                   {verTodas
                     ? "Ver solo las más recientes"
                     : `Ver las ${ocultas} sesiones anteriores`}

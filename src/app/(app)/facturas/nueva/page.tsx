@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { hoyBogota } from "@/lib/fecha";
 import { leerEmisor } from "@/lib/facturas/esquema";
 import { pacienteParaFacturar } from "@/lib/facturas/paciente";
@@ -24,17 +23,20 @@ export default async function NuevaFacturaPage({
   const emisores = (filas ?? []).map((f) => leerEmisor(f.datos));
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
-      <Link
-        href={paciente ? `/pacientes/${paciente.id}` : "/facturas"}
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
-      >
-        <ChevronLeft className="size-4" /> {paciente ? paciente.nombre : "Facturas"}
-      </Link>
-      <h1 className="text-2xl font-semibold tracking-tight">Nueva factura</h1>
+    <div className="space-y-5">
+      <nav aria-label="Ruta" className="text-muted-foreground flex items-center gap-2 text-[0.8125rem]">
+        {paciente ? (
+          <Link href={`/pacientes/${paciente.id}`} className="enlace truncate">{paciente.nombre}</Link>
+        ) : (
+          <Link href="/facturas" className="enlace">Facturas</Link>
+        )}
+        <span aria-hidden>/</span>
+        <span>Nueva factura</span>
+      </nav>
+      <h1 className="titulo">Nueva factura</h1>
 
       {emisores.length === 0 ? (
-        <p role="alert" className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
+        <p role="alert" className="bg-destructive/10 text-destructive rounded-lg px-3 py-2.5 text-sm">
           Todavía no están cargados los datos de las empresas que facturan. Hay que ejecutar
           «npm run cargar:emisores».
         </p>
