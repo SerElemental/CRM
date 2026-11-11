@@ -22,6 +22,7 @@ El Excel tiene datos de pacientes: **vive fuera del repositorio** (por defecto s
 node scripts/importar-excel.mjs --dry-run   # analiza y deja reportes/importacion-para-revisar.md
 npm run importar                            # importa (solo con la base vacía)
 npm run importar -- --forzar                # vuelve a importar encima
+npm run importar -- --solo-sesiones         # corrige solo las sesiones (no pisa lo editado en el CRM)
 ```
 
 ## Facturas

@@ -33,14 +33,12 @@ export function limpiarComentario(c: unknown): string | null {
 /**
  * Una casilla de sesión → una sesión, o `null` si la casilla está vacía.
  *
- * Código del Excel:
- *   amarillo           tenida y pagada
- *   amarillo + A       tenida, pagada por adelantado (paquete)
- *   amarillo + S       tenida; quedó debiendo y luego pagó
- *   S sin color        tenida, sin pagar
- *   A sin color        pagada por adelantado, todavía no la ha tenido
- *   rojo + A           pagó y la perdió (no asistió)
- *   rojo sin letra     no asistió (sin pago por adelantado)
+ * Código del Excel (reglas de Laura, 11-nov-2026):
+ *   amarillo (con A, con S o sin letra)   efectuada y ya pagada
+ *   S sin color                           efectuada, pendiente de cobro
+ *   A sin color                           pagada por adelantado, todavía no efectuada
+ *   rojo (con o sin letra)                el paciente no asistió: sesión perdida
+ *                                         (con A la había pagado por adelantado)
  *
  * En una fila toda roja («no volver a contactar») el rojo es el fondo de la
  * fila y no dice nada de la sesión: solo cuentan las letras.
@@ -72,8 +70,9 @@ export function mapearCasilla(c: {
   let revisar = raro;
 
   if (relleno === "amarillo") {
+    // La letra de una casilla amarilla solo cuenta cómo se pagó; ya está pagada.
     asistencia = "realizada";
-    pago = letra === "a" ? "paquete" : "pagada";
+    pago = "pagada";
   } else if (relleno === "rojo") {
     asistencia = "perdida";
     pago = letra === "a" ? "paquete" : letra === "s" ? "sin_pagar" : "no_aplica";

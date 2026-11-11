@@ -15,8 +15,8 @@ describe("mapearCasilla", () => {
 
   it.each([
     [null, "amarillo", "realizada", "pagada"],
-    ["a", "amarillo", "realizada", "paquete"],
-    ["A", "amarillo", "realizada", "paquete"],
+    ["a", "amarillo", "realizada", "pagada"],
+    ["A", "amarillo", "realizada", "pagada"],
     ["s", "amarillo", "realizada", "pagada"],
     ["s", "ninguno", "realizada", "sin_pagar"],
     ["S", "ninguno", "realizada", "sin_pagar"],

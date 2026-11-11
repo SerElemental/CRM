@@ -6,6 +6,8 @@
  *   node scripts/importar-excel.mjs --dry-run            # solo analiza y muestra el resumen
  *   npm run importar                                     # importa (base vacía)
  *   npm run importar -- --forzar                         # vuelve a importar encima
+ *   npm run importar -- --solo-sesiones --dry-run        # compara las sesiones con la base
+ *   npm run importar -- --solo-sesiones                  # corrige solo las sesiones
  *   npm run importar -- "/ruta/a/otro.xlsx"
  *
  * El Excel tiene datos de pacientes: vive FUERA del repositorio (por defecto se
@@ -15,6 +17,10 @@
  * La importación es repetible: la clave de cada paciente es su fila en el Excel
  * (`excel_fila`). Si la base ya tiene pacientes exige `--forzar`, porque volver
  * a importar sobrescribe lo que se haya editado en el CRM.
+ *
+ * `--solo-sesiones` no toca pacientes ni tarifas: vuelve a leer las casillas y
+ * deja las sesiones como dice el Excel, sin pisar las que se editaron o se
+ * crearon en el CRM. Sirve cuando cambia la lectura del código de colores.
  */
 import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -29,6 +35,7 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 const DRY = args.includes("--dry-run");
 const FORZAR = args.includes("--forzar");
+const SOLO_SESIONES = args.includes("--solo-sesiones");
 const archivo = resolve(
   args.find((a) => !a.startsWith("--")) ?? join(raiz, "..", "Registro pacientes Mayo 2026.xlsx"),
 );
@@ -39,6 +46,8 @@ const COL = {
   contacto: 8, email: 9, flyer: 10, estado: 11, modalidad: 12, planTrabajo: 13,
   consentimiento: 14, ultimaSesion: 15, /* 16 = seguimiento antiguo: se descarta */
   fechaInicio: 17, valor2026: 18, valor2025: 19, /* 20–22 = valores 2024 y anteriores: se descartan */
+  /* 23–122 = «Sesión 1» a «Sesión 100». Más allá no hay sesiones: solo el color de
+     filas pintadas enteras, que se derrama hasta el final de la hoja. */
   primeraSesion: 23, ultimaSesionCol: 122,
 };
 const PRIMERA_FILA = 3;
@@ -272,7 +281,7 @@ writeFileSync(
 );
 console.log(`Detalle para revisar: ${rutaReporte}\n`);
 
-if (DRY) {
+if (DRY && !SOLO_SESIONES) {
   console.log("Modo --dry-run: no se escribió nada en la base.");
   process.exit(0);
 }
@@ -297,6 +306,11 @@ const ok = ({ data, error }, que) => {
 const enLotes = async (filas, tam, fn) => {
   for (let i = 0; i < filas.length; i += tam) await fn(filas.slice(i, i + tam));
 };
+
+if (SOLO_SESIONES) {
+  await corregirSesiones();
+  process.exit(0);
+}
 
 const { count } = await sb.from("pacientes").select("id", { count: "exact", head: true });
 if ((count ?? 0) > 0 && !FORZAR) {
@@ -343,3 +357,84 @@ await enLotes(sesiones, 500, async (lote) =>
   ok(await sb.from("sesiones").upsert(lote, { onConflict: "paciente_id,numero" }), "guardar sesiones"),
 );
 console.log(`✓ ${sesiones.length} sesiones\n\n✅ Importación terminada.`);
+
+// ───────────────────────── Solo sesiones ─────────────────────────
+/** Deja las sesiones como dice el Excel, sin tocar lo que se haya hecho en el CRM. */
+async function corregirSesiones() {
+  const todas = async (tabla, columnas) => {
+    const filas = [];
+    for (let i = 0; ; i += 1000) {
+      const data = ok(await sb.from(tabla).select(columnas).order("id").range(i, i + 999), `leer ${tabla}`);
+      filas.push(...data);
+      if (data.length < 1000) return filas;
+    }
+  };
+  const enBase = await todas("pacientes", "id, excel_fila");
+  const guardadas = await todas(
+    "sesiones", "id, paciente_id, numero, asistencia, pago, nota, origen, created_at, updated_at",
+  );
+  const idPaciente = new Map(enBase.map((p) => [p.excel_fila, p.id]));
+  const actual = new Map(guardadas.map((s) => [`${s.paciente_id}:${s.numero}`, s]));
+
+  const nuevas = [];
+  const cambios = new Map(); // «asistencia/pago» → sesiones que pasan a ese estado
+  const intactas = []; // distintas del Excel, pero tocadas en el CRM
+  const sinPaciente = [];
+  const delExcel = new Set();
+
+  for (const p of pacientes) {
+    const pid = idPaciente.get(p.fila.excel_fila);
+    if (!pid) {
+      if (p.sesiones.length) sinPaciente.push(p.fila.excel_fila);
+      continue;
+    }
+    for (const s of p.sesiones) {
+      delExcel.add(`${pid}:${s.numero}`);
+      const g = actual.get(`${pid}:${s.numero}`);
+      if (!g) {
+        nuevas.push({ paciente_id: pid, origen: "excel", ...s });
+      } else if (g.asistencia !== s.asistencia || g.pago !== s.pago) {
+        if (g.origen !== "excel" || g.updated_at !== g.created_at) {
+          intactas.push({ fila: p.fila.excel_fila, sesion: s.numero });
+          continue;
+        }
+        const k = `${s.asistencia}/${s.pago}`;
+        cambios.set(k, [...(cambios.get(k) ?? []), g]);
+      }
+    }
+  }
+  const sobran = guardadas.filter((g) => g.origen === "excel" && !delExcel.has(`${g.paciente_id}:${g.numero}`));
+
+  const pasos = {};
+  for (const [k, lista] of cambios) for (const g of lista) {
+    const paso = `${g.asistencia}/${g.pago} → ${k}`;
+    pasos[paso] = (pasos[paso] ?? 0) + 1;
+  }
+  console.log("Corrección de sesiones:");
+  console.log(`  nuevas (faltaban en la base):        ${nuevas.length}`);
+  for (const [paso, n] of Object.entries(pasos)) console.log(`  ${paso.padEnd(36)} ${n}`);
+  console.log(`  distintas pero tocadas en el CRM:    ${intactas.length} (no se cambian)`);
+  for (const i of intactas) console.log(`    fila ${i.fila}, sesión ${i.sesion}`);
+  console.log(`  en la base y ya no en el Excel:      ${sobran.length} (no se borran)`);
+  if (sinPaciente.length) console.log(`  filas del Excel sin paciente en la base: ${sinPaciente.join(", ")}`);
+
+  if (DRY) {
+    console.log("\nModo --dry-run: no se escribió nada en la base.");
+    return;
+  }
+
+  // Copia de lo que había, por si hay que deshacer (carpeta sin versionar).
+  const antes = [...cambios.values()].flat().map(({ id, asistencia, pago }) => ({ id, asistencia, pago }));
+  const copia = join(dirReportes, `sesiones-antes-${new Date().toISOString().replace(/[:.]/g, "-")}.json`);
+  writeFileSync(copia, JSON.stringify({ antes, nuevas: nuevas.map((n) => [n.paciente_id, n.numero]) }));
+  console.log(`\nCopia de lo anterior: ${copia}`);
+
+  for (const [k, lista] of cambios) {
+    const [asistencia, pago] = k.split("/");
+    await enLotes(lista.map((g) => g.id), 200, async (ids) =>
+      ok(await sb.from("sesiones").update({ asistencia, pago }).in("id", ids), "corregir sesiones"),
+    );
+  }
+  await enLotes(nuevas, 500, async (lote) => ok(await sb.from("sesiones").insert(lote), "añadir sesiones"));
+  console.log(`✓ ${antes.length} sesiones corregidas, ${nuevas.length} añadidas\n\n✅ Sesiones al día con el Excel.`);
+}
