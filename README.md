@@ -28,7 +28,7 @@ npm run importar -- --forzar                # vuelve a importar encima
 
 | Comando | Qué hace |
 |---|---|
-| `npm run dev` | Servidor de desarrollo |
+| `npm run dev` | Servidor de desarrollo (admite cabeceras grandes: en `localhost` se acumulan las cookies de sesión de otros proyectos y sin eso responde 431) |
 | `npm run build` | Compilación de producción |
 | `npm run lint` | ESLint |
 | `npm test` | Pruebas: mapeo del Excel y migraciones (en un Postgres en memoria) |
