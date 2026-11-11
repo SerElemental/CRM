@@ -22,15 +22,6 @@ export type DefinicionFiltro = {
 
 /** En el orden en que se muestran. */
 export const FILTROS: DefinicionFiltro[] = [
-  { clave: "pais", titulo: "País" },
-  {
-    clave: "flyer",
-    titulo: "Seguimiento flyer",
-    opciones: [
-      { value: "si", label: "Flyer enviado" },
-      { value: "no", label: "Sin flyer" },
-    ],
-  },
   {
     clave: "estado",
     titulo: "Estado",
@@ -40,6 +31,15 @@ export const FILTROS: DefinicionFiltro[] = [
       { value: "inactivo", label: "Inactivo" },
       { value: "inactivo_sin_pagar", label: "Inactivo sin pagar" },
       { value: "remitido", label: "Remitido" },
+    ],
+  },
+  { clave: "pais", titulo: "País" },
+  {
+    clave: "consentimiento",
+    titulo: "Consentimiento",
+    opciones: [
+      { value: "si", label: "Firmado" },
+      { value: "no", label: "Sin firmar" },
     ],
   },
   {
@@ -53,11 +53,11 @@ export const FILTROS: DefinicionFiltro[] = [
     ],
   },
   {
-    clave: "consentimiento",
-    titulo: "Consentimiento",
+    clave: "flyer",
+    titulo: "Seguimiento flyer",
     opciones: [
-      { value: "si", label: "Firmado" },
-      { value: "no", label: "Sin firmar" },
+      { value: "si", label: "Flyer enviado" },
+      { value: "no", label: "Sin flyer" },
     ],
   },
 ];
