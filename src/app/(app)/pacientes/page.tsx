@@ -40,7 +40,7 @@ export default async function PacientesPage({
     supabase
       .from("pacientes_listado")
       .select(
-        "id, nombre_completo, tipo, estado, pais, telefono, grupo_whatsapp, es_miembro, no_contactar, ultima_sesion, sesiones_realizadas, sesiones_por_cobrar, sesiones_prepagadas",
+        "id, nombre_completo, tipo, estado, pais, telefono, no_contactar, ultima_sesion, sesiones_por_cobrar, sesiones_prepagadas",
         { count: "exact" },
       ),
     filtros,
@@ -94,11 +94,10 @@ export default async function PacientesPage({
               <tr>
                 <th>Paciente</th>
                 <th>Estado</th>
-                <th>Grupo WhatsApp</th>
-                <th>Membresía</th>
-                <th>Última sesión</th>
-                <th className="text-right">Sesiones</th>
+                <th>Teléfono</th>
+                <th>País</th>
                 <th>Saldo</th>
+                <th>Última sesión</th>
               </tr>
             </thead>
             <tbody>
@@ -108,21 +107,22 @@ export default async function PacientesPage({
                     <Link href={`/pacientes/${p.id}`} className="hover:text-primary font-medium">
                       {p.nombre_completo}
                     </Link>
-                    <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-xs">
-                      {p.tipo !== "individual" && <span>{TIPO_LABEL[p.tipo]}</span>}
-                      {p.telefono && <span>{p.telefono}</span>}
-                      {p.no_contactar && (
-                        <span className="text-destructive inline-flex items-center gap-1">
-                          <Ban className="size-3" /> No contactar
-                        </span>
-                      )}
-                    </div>
+                    {(p.tipo !== "individual" || p.no_contactar) && (
+                      <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-xs">
+                        {p.tipo !== "individual" && <span>{TIPO_LABEL[p.tipo]}</span>}
+                        {p.no_contactar && (
+                          <span className="text-destructive inline-flex items-center gap-1">
+                            <Ban className="size-3" /> No contactar
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td><Badge variant={ESTADO_BADGE[p.estado]}>{ESTADO_LABEL[p.estado]}</Badge></td>
-                  <td className="text-muted-foreground">{p.grupo_whatsapp ?? "—"}</td>
-                  <td>{p.es_miembro ? <Badge variant="outline">Miembro</Badge> : <span className="text-muted-foreground">—</span>}</td>
-                  <td className="text-muted-foreground whitespace-nowrap">{formatearFecha(p.ultima_sesion)}</td>
-                  <td className="text-right tabular-nums">{p.sesiones_realizadas}</td>
+                  <td className="whitespace-nowrap tabular-nums">
+                    {p.telefono ?? <span className="text-muted-foreground">—</span>}
+                  </td>
+                  <td className="text-muted-foreground">{p.pais ?? "—"}</td>
                   <td>
                     <div className="flex flex-wrap gap-1">
                       {p.sesiones_por_cobrar > 0 && <Badge variant="warning">{p.sesiones_por_cobrar} por cobrar</Badge>}
@@ -136,6 +136,7 @@ export default async function PacientesPage({
                       )}
                     </div>
                   </td>
+                  <td className="text-muted-foreground whitespace-nowrap">{formatearFecha(p.ultima_sesion)}</td>
                 </tr>
               ))}
             </tbody>
