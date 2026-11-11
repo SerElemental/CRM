@@ -10,7 +10,7 @@ Next.js 16 (App Router) · Supabase (Postgres + Auth + RLS) · Tailwind 4 · Typ
 npm install
 cp .env.example .env.local   # y completa las llaves de Supabase
 npm run db:apply             # aplica las migraciones de supabase/migrations
-npm run seed:admin -- correo@ejemplo.com "Nombre"   # crea una cuenta con acceso
+npm run seed:admin -- <tu-correo> "<Tu Nombre>"   # crea una cuenta; pide la contraseña sin mostrarla
 npm run dev
 ```
 
