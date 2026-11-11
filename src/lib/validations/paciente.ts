@@ -18,7 +18,8 @@ const valorOpcional = z.preprocess(
 const casilla = z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean());
 const vacioANull = (v: unknown) => (v === "" || v == null ? null : v);
 
-export const pacienteSchema = z.object({
+export const pacienteSchema = z
+  .object({
   nombre_completo: z.string().trim().min(2, "Escribe el nombre completo.").max(200),
   tipo: z.enum(["individual", "pareja", "adolescente", "nino"]),
   pais: textoOpcional,
@@ -41,12 +42,26 @@ export const pacienteSchema = z.object({
   no_contactar: casilla,
   no_contactar_motivo: textoOpcional,
   notas: textoOpcional,
+  // Contacto de emergencia
+  emergencia_nombre: textoOpcional,
+  emergencia_telefono: textoOpcional,
+  emergencia_relacion: z.preprocess(vacioANull, z.enum(["mama", "papa", "esposo", "hijo", "otro"]).nullable()),
+  emergencia_relacion_otra: textoOpcional,
   // Tarifas del año actual y del anterior.
   valor_actual: valorOpcional,
   moneda_actual: z.enum(["COP", "USD"]),
   valor_anterior: valorOpcional,
   moneda_anterior: z.enum(["COP", "USD"]),
-});
+})
+  .superRefine((d, ctx) => {
+    if (d.emergencia_relacion === "otro" && !d.emergencia_relacion_otra) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["emergencia_relacion_otra"],
+        message: "Escribe cuál es la relación.",
+      });
+    }
+  });
 
 export type PacienteInput = z.infer<typeof pacienteSchema>;
 

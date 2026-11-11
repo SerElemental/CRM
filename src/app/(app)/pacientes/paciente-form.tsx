@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { GrupoWhatsapp, Moneda, Paciente, PlanMembresia } from "@/lib/database.types";
-import { ESTADOS, MODALIDADES, PLANES_TRABAJO, TIPOS } from "@/lib/pacientes";
+import { ESTADOS, MODALIDADES, PLANES_TRABAJO, RELACIONES_EMERGENCIA, TIPOS } from "@/lib/pacientes";
 import type { PacienteFormState } from "./actions";
 
 type Tarifa = { valor: number; moneda: Moneda } | null;
@@ -68,6 +68,43 @@ function CampoValor({
   );
 }
 
+/** Sección aparte porque el campo «¿Cuál?» solo aparece al elegir la relación «Otro». */
+function ContactoEmergencia({
+  nombre, telefono, relacion: relacionInicial, relacionOtra, errorOtra,
+}: {
+  nombre: string | number; telefono: string | number; relacion: string;
+  relacionOtra: string | number; errorOtra?: string;
+}) {
+  const [relacion, setRelacion] = useState(relacionInicial);
+  return (
+    <Seccion titulo="Contacto de emergencia">
+      <Campo label="Nombre del contacto" htmlFor="emergencia_nombre">
+        <Input id="emergencia_nombre" name="emergencia_nombre" defaultValue={nombre} />
+      </Campo>
+      <Campo label="Teléfono del contacto" htmlFor="emergencia_telefono">
+        <Input id="emergencia_telefono" name="emergencia_telefono" type="tel" defaultValue={telefono} />
+      </Campo>
+      <Campo label="Relación con el paciente" htmlFor="emergencia_relacion">
+        <select
+          id="emergencia_relacion" name="emergencia_relacion" className="control"
+          value={relacion} onChange={(ev) => setRelacion(ev.target.value)}
+        >
+          <option value="">Sin definir</option>
+          {RELACIONES_EMERGENCIA.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </Campo>
+      {relacion === "otro" && (
+        <Campo label="¿Cuál es la relación?" htmlFor="emergencia_relacion_otra" error={errorOtra}>
+          <Input
+            id="emergencia_relacion_otra" name="emergencia_relacion_otra" defaultValue={relacionOtra}
+            placeholder="Ej. hermana, tío, amiga" aria-invalid={errorOtra ? true : undefined} autoFocus
+          />
+        </Campo>
+      )}
+    </Seccion>
+  );
+}
+
 export function PacienteForm({
   action, paciente, grupos, planes, anio, tarifaActual, tarifaAnterior, cancelarHref,
 }: {
@@ -117,6 +154,14 @@ export function PacienteForm({
           </select>
         </Campo>
       </Seccion>
+
+      <ContactoEmergencia
+        nombre={txt("emergencia_nombre", p?.emergencia_nombre)}
+        telefono={txt("emergencia_telefono", p?.emergencia_telefono)}
+        relacion={String(txt("emergencia_relacion", p?.emergencia_relacion))}
+        relacionOtra={txt("emergencia_relacion_otra", p?.emergencia_relacion_otra)}
+        errorOtra={e.emergencia_relacion_otra}
+      />
 
       <Seccion titulo="Proceso terapéutico">
         <Campo label="Estado" htmlFor="estado">

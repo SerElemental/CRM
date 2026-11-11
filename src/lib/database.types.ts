@@ -11,6 +11,7 @@ export type PlanTrabajo = "si" | "no" | "no_aplica";
 export type SesionAsistencia = "realizada" | "pendiente" | "perdida";
 export type SesionPago = "pagada" | "paquete" | "sin_pagar" | "no_aplica";
 export type SesionOrigen = "excel" | "crm";
+export type RelacionEmergencia = "mama" | "papa" | "esposo" | "hijo" | "otro";
 
 type Tabla<Row, Opcionales extends keyof Row = never> = {
   Row: Row;
@@ -63,6 +64,10 @@ export type Paciente = {
   no_contactar: boolean;
   no_contactar_motivo: string | null;
   notas: string | null;
+  emergencia_nombre: string | null;
+  emergencia_telefono: string | null;
+  emergencia_relacion: RelacionEmergencia | null;
+  emergencia_relacion_otra: string | null;
   busqueda: string;
   created_at: string;
   updated_at: string;

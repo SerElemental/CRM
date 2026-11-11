@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { anioActual, formatearDinero, formatearFecha, hoyBogota } from "@/lib/fecha";
 import {
-  ESTADO_BADGE, ESTADO_LABEL, MODALIDAD_LABEL, PLAN_TRABAJO_LABEL, TIPO_LABEL,
+  ESTADO_BADGE, ESTADO_LABEL, MODALIDAD_LABEL, PLAN_TRABAJO_LABEL, TIPO_LABEL, textoRelacionEmergencia,
 } from "@/lib/pacientes";
 import { createClient } from "@/lib/supabase/server";
 import { marcarFlyerEnviado } from "../actions";
@@ -86,6 +86,14 @@ export default async function FichaPacientePage({ params }: { params: Promise<{ 
           <Dato label="Grupo de WhatsApp">{p.grupo_whatsapp ?? "Sin grupo"}</Dato>
         </Tarjeta>
 
+        <Tarjeta titulo="Contacto de emergencia">
+          <Dato label="Nombre">{p.emergencia_nombre}</Dato>
+          <Dato label="Teléfono">{p.emergencia_telefono}</Dato>
+          <Dato label="Relación">
+            {textoRelacionEmergencia(p.emergencia_relacion, p.emergencia_relacion_otra)}
+          </Dato>
+        </Tarjeta>
+
         <Tarjeta titulo="Proceso terapéutico">
           <Dato label="Fecha de inicio">
             {p.fecha_inicio ? formatearFecha(p.fecha_inicio) : (p.fecha_inicio_texto ?? "—")}
@@ -126,7 +134,8 @@ export default async function FichaPacientePage({ params }: { params: Promise<{ 
           )}
         </Tarjeta>
 
-        <section className="bg-card ring-foreground/[0.06] rounded-xl p-5 shadow-sm ring-1">
+        {/* Séptima tarjeta: ocupa la fila entera para no quedar suelta. */}
+        <section className="bg-card ring-foreground/[0.06] rounded-xl p-5 shadow-sm ring-1 md:col-span-2 xl:col-span-3">
           <h2 className="mb-3 text-sm font-semibold">Notas</h2>
           <p className="text-sm whitespace-pre-line">
             {p.notas ?? <span className="text-muted-foreground">Sin notas.</span>}

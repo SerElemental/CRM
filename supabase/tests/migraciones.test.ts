@@ -62,6 +62,28 @@ describe("migraciones", () => {
     });
   });
 
+  it("guarda el contacto de emergencia, lo expone en el listado y valida la relación", async () => {
+    await como(db, staff, async () => {
+      await db.query(
+        `update public.pacientes
+            set emergencia_nombre = 'Luz Peña', emergencia_telefono = '300 222',
+                emergencia_relacion = 'otro', emergencia_relacion_otra = 'hermana'
+          where id = $1`, [paciente],
+      );
+      const fila = await uno<Record<string, string>>(
+        `select emergencia_nombre, emergencia_telefono, emergencia_relacion, emergencia_relacion_otra
+           from public.pacientes_listado where id = $1`, [paciente],
+      );
+      expect(fila).toEqual({
+        emergencia_nombre: "Luz Peña", emergencia_telefono: "300 222",
+        emergencia_relacion: "otro", emergencia_relacion_otra: "hermana",
+      });
+      await expect(
+        db.query("update public.pacientes set emergencia_relacion = 'vecino' where id = $1", [paciente]),
+      ).rejects.toThrow(/check constraint/);
+    });
+  });
+
   it("una cuenta sin perfil no ve ni escribe pacientes", async () => {
     await como(db, intruso, async () => {
       const r = await uno<{ n: number }>("select count(*)::int as n from public.pacientes");

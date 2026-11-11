@@ -39,6 +39,7 @@ async function guardar(id: string | null, formData: FormData): Promise<PacienteF
     flyer_enviado_el: d.flyer_enviado ? (d.flyer_enviado_el ?? hoyBogota()) : null,
     no_contactar_motivo: d.no_contactar ? d.no_contactar_motivo : null,
     plan_membresia_id: d.es_miembro ? d.plan_membresia_id : null,
+    emergencia_relacion_otra: d.emergencia_relacion === "otro" ? d.emergencia_relacion_otra : null,
   };
 
   const supabase = await createClient();
