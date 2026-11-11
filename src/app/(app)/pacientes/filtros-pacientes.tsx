@@ -3,12 +3,12 @@
 import { useEffect, useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Popover } from "@base-ui/react/popover";
-import { Check, ChevronDown, Loader2, Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Check, ChevronDown, X } from "lucide-react";
 import {
   FILTROS, filtrosAUrl, hayFiltros, type ClaveFiltro, type FiltrosActivos, type Opcion,
 } from "@/lib/pacientes-filtros";
 import { cn } from "@/lib/utils";
+import { BuscadorPacientes } from "./buscador-pacientes";
 
 /** Milisegundos que se espera tras la última tecla antes de buscar. */
 const ESPERA_BUSQUEDA = 350;
@@ -67,20 +67,7 @@ export function FiltrosPacientes({
       aria-label="Buscar y filtrar pacientes"
       className="bg-card ring-foreground/[0.06] space-y-3 rounded-xl p-4 shadow-sm ring-1"
     >
-      <div className="relative">
-        <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-3 size-4" />
-        <Input
-          type="search"
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-          placeholder="Buscar por nombre, teléfono o correo"
-          aria-label="Buscar paciente"
-          className="pr-9 pl-9"
-        />
-        {pendiente && (
-          <Loader2 className="text-muted-foreground absolute top-2.5 right-3 size-4 animate-spin" aria-label="Actualizando" />
-        )}
-      </div>
+      <BuscadorPacientes valor={texto} alCambiar={setTexto} pendiente={pendiente} />
 
       <div className="flex flex-wrap items-center gap-2">
         {FILTROS.map((f) => {
