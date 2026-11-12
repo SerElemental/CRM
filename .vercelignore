@@ -1,17 +1,19 @@
 # Lo que NUNCA se sube a Vercel al publicar desde este computador.
 # (Vercel ya respeta .gitignore; esto lo deja explícito por si acaso.)
 
-# Llaves y datos locales
+# Llaves y datos locales.
+# Las carpetas van con «/» al inicio: sin ella, «datos/» también excluye
+# src/app/(app)/facturas/nueva/datos/ y la factura no carga al paciente.
 .env*
 !.env.example
-datos/
-reportes/
+/datos/
+/reportes/
 *.xlsx
 *.xls
 *.csv
 
 # No hacen falta para que la app funcione
-supabase/tests/
-scripts/
-.next/
-node_modules/
+/supabase/tests/
+/scripts/
+/.next/
+/node_modules/
