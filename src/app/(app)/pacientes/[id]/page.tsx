@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Ban, FileDown, Send, UserPlus } from "lucide-react";
+import { Ban, ClipboardList, FileDown, Send, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Estado } from "@/components/ui/estado";
@@ -94,6 +94,9 @@ export default async function FichaPacientePage({ params }: { params: Promise<{ 
         </div>
         {/* En el móvil, «Registrar sesión» ocupa toda la fila y va primero. */}
         <div className="grid w-full grid-cols-2 gap-2.5 sm:flex sm:w-auto">
+          <Link href={`/historias/${id}`} className={buttonVariants({ variant: "outline" })}>
+            <ClipboardList /> Historia clínica
+          </Link>
           <Link href={`/pacientes/${id}/editar`} className={buttonVariants({ variant: "outline" })}>Editar</Link>
           <RegistrarPaquete pacienteId={id} />
           <RegistrarSesion

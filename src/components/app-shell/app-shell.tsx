@@ -83,7 +83,7 @@ export function AppShell({ nombre, children }: { nombre: string; children: React
 
       <nav
         aria-label="Principal"
-        className="bg-card border-input fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="bg-card border-input fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {NAV.map((item) => {
           const activo = esActivo(item.href);
@@ -98,7 +98,7 @@ export function AppShell({ nombre, children }: { nombre: string; children: React
               )}
             >
               <item.icon className="size-5" strokeWidth={activo ? 2 : 1.7} />
-              {item.label}
+              {item.corto ?? item.label}
             </Link>
           );
         })}

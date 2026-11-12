@@ -9,7 +9,14 @@ const nextConfig: NextConfig = {
       "./src/lib/facturas/fuentes/*.ttf",
       "./public/marca/logo-ser-elemental.png",
     ],
+    // El PDF de la historia clínica usa las mismas tipografías y el mismo logo.
+    "/historias/**": [
+      "./src/lib/facturas/fuentes/*.ttf",
+      "./public/marca/logo-ser-elemental.png",
+    ],
   },
+  // Los adjuntos de la historia (hasta 4 MB) viajan en una Server Action.
+  experimental: { serverActions: { bodySizeLimit: "5mb" } },
   serverExternalPackages: ["@react-pdf/renderer"],
   // Todo el CRM vive detrás de la sesión (cookies en cada pantalla), así que no
   // se usa el modelo de componentes en caché: cada página se renderiza por petición.
